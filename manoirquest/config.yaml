@@ -30,8 +30,6 @@ schema:
   port: int
   secret_key: str
 
-image: "ghcr.io/fpoezevara/manoirquest-addon/{arch}"
-
 arch:
   - aarch64
   - amd64
