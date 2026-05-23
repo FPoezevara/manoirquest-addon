@@ -1,32 +1,32 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:16.3.2
+
+# ── Stage 1 : Build (Node 22 requis pour node:sqlite) ───────────────────
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY app/package.json ./
+RUN npm install
+COPY app/ ./
+RUN npm run build
+RUN npm prune --omit=dev
+
+# ── Stage 2 : Runtime HAOS ───────────────────────────────────────────────
 FROM $BUILD_FROM
 
-# ── System deps ─────────────────────────────────────────────────────────
+# Node 22 depuis Alpine 3.21
 RUN apk add --no-cache \
-    nodejs \
-    npm
+    --repository=https://dl-cdn.alpinelinux.org/alpine/v3.21/main \
+    nodejs
 
-# ── App ─────────────────────────────────────────────────────────────────
 WORKDIR /app
+COPY --from=builder /app/build       ./build
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/scripts     ./scripts
+COPY --from=builder /app/package.json ./
 
-# Copy package files first for layer caching
-COPY app/package*.json ./
-RUN npm ci --omit=dev
+RUN mkdir -p /share/manoirquest
 
-# Copy built app
-COPY app/ ./
-
-# Build the SvelteKit app
-RUN npm run build
-
-# ── Data directory ───────────────────────────────────────────────────────
-# /share/maisonquest will be mounted from HAOS (persistent)
-RUN mkdir -p /share/maisonquest
-
-# ── Startup script ───────────────────────────────────────────────────────
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
 
 EXPOSE 3000
-
 CMD ["/run.sh"]
