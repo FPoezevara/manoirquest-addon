@@ -23,4 +23,4 @@ bashio::log.info "Database ready"
 
 # ── Start server ─────────────────────────────────────────────────────────
 bashio::log.info "Starting ManoirQuest on port ${PORT}..."
-exec node build/index.js
+exec node --experimental-sqlite build/index.js
