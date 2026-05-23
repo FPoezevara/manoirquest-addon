@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ManoirQuest — Calibration des tâches</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#6B46C1;--pd:#4C1D95;--pl:#EDE9FE;
+  --gold:#D97F0A;--red:#EF4444;--green:#16A34A;
+  --gray:#6B7280;--bg:#F5F3FF;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;color:#1E1E2E}
+.screen{display:none}
+.screen.active{display:flex;flex-direction:column;min-height:100vh}
+
+/* HEADER */
+.hdr{background:var(--p);color:white;padding:14px 18px}
+.hdr-top{display:flex;align-items:center;gap:8px}
+.hdr-title{font-size:17px;font-weight:700}
+.hdr-sub{font-size:11px;opacity:.75;margin-top:2px}
+.prog-bar{height:4px;background:rgba(255,255,255,.25);border-radius:2px;margin-top:10px}
+.prog-fill{height:100%;background:#FACC15;border-radius:2px;transition:width .35s}
+
+/* CONTENT */
+.cnt{flex:1;padding:18px;max-width:480px;margin:0 auto;width:100%}
+
+/* CARDS */
+.card{background:white;border-radius:16px;padding:18px;box-shadow:0 2px 10px rgba(107,70,193,.08);margin-bottom:14px}
+
+/* BUTTONS */
+.btn{display:block;width:100%;padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;transition:all .15s;text-align:center}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--p);color:white}
+.btn-p:hover{background:var(--pd)}
+.btn-s{background:var(--pl);color:var(--p)}
+.btn-row{display:flex;gap:10px;margin-top:14px}
+.btn-row .btn{flex:1;padding:12px}
+
+/* WELCOME */
+.hero{text-align:center;padding:36px 18px 20px}
+.hero-ico{font-size:60px;margin-bottom:10px}
+.hero h1{font-size:26px;font-weight:800;color:var(--pd)}
+.hero p{color:var(--gray);margin-top:8px;font-size:14px;line-height:1.5}
+
+/* PLAYER GRID */
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.pcard{background:white;border:2px solid #E5E7EB;border-radius:16px;padding:18px 10px;text-align:center;cursor:pointer;transition:all .2s}
+.pcard:hover:not(.locked){border-color:var(--p);background:var(--pl)}
+.pcard .av{font-size:46px;margin-bottom:6px}
+.pcard .nm{font-size:17px;font-weight:700}
+.pcard .st{font-size:11px;color:var(--gray);margin-top:4px}
+.pcard.done-card{border-color:var(--green);background:#F0FDF4}
+.pcard.done-card .st{color:var(--green);font-weight:600}
+.pcard.locked{opacity:.5;cursor:not-allowed}
+
+/* RATING QUESTION */
+.q-label{font-size:11px;color:var(--gray);margin-bottom:14px;text-align:center}
+.task-big{text-align:center;margin-bottom:18px}
+.task-big .em{font-size:44px;display:block;margin-bottom:8px}
+.task-big .nm{font-size:19px;font-weight:700;color:var(--pd);line-height:1.3}
+.rating-area{margin:16px 0;text-align:center}
+.r-emoji{font-size:52px;display:block;margin-bottom:6px;transition:all .2s}
+.r-val{font-size:34px;font-weight:900;color:var(--p);line-height:1}
+.r-lbl{font-size:13px;color:var(--gray);font-style:italic;margin:6px 0 14px;min-height:20px}
+input[type=range]{width:100%;accent-color:var(--p);cursor:pointer;height:6px}
+.r-ends{display:flex;justify-content:space-between;font-size:11px;color:var(--gray);margin-top:5px}
+
+/* PAIRWISE */
+.pair-intro{text-align:center;font-size:13px;color:var(--gray);margin-bottom:14px;padding:0 8px;line-height:1.5}
+.pair-intro strong{color:var(--red);font-size:15px}
+.pair-btn{background:white;border:2px solid #E5E7EB;border-radius:14px;padding:18px 14px;cursor:pointer;text-align:center;width:100%;transition:all .2s;margin-bottom:8px}
+.pair-btn:hover{border-color:var(--red);background:#FEF2F2}
+.pair-btn:active{transform:scale(.97)}
+.pair-btn .pb-em{font-size:30px;display:block;margin-bottom:6px}
+.pair-btn .pb-nm{font-size:15px;font-weight:600;color:#374151;line-height:1.3}
+.pair-btn:hover .pb-nm{color:var(--red)}
+.vs{text-align:center;font-size:20px;font-weight:900;color:#D1D5DB;margin:2px 0}
+
+/* DONE SCREEN */
+.done-hero{text-align:center;padding:50px 20px}
+.done-hero .ico{font-size:72px;margin-bottom:14px}
+.done-hero h2{font-size:24px;font-weight:800;color:var(--pd)}
+.done-hero p{color:var(--gray);margin-top:8px;font-size:14px}
+
+/* RESULTS */
+.res-meta{font-size:12px;color:var(--gray);text-align:center;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--p);color:white;padding:7px 8px;text-align:left}
+th:last-child,td:last-child{text-align:center}
+td{padding:7px 8px;border-bottom:1px solid #F3F4F6}
+tr:nth-child(even) td{background:var(--pl)}
+.pts{display:inline-block;background:var(--gold);color:white;border-radius:8px;padding:2px 7px;font-weight:700;font-size:11px}
+.bar-cell{width:60px}
+.bar-bg{background:#E5E7EB;border-radius:4px;height:8px;overflow:hidden}
+.bar-fill{background:var(--p);height:100%;border-radius:4px}
+.export-box{background:#1E1E2E;color:#A5F3FC;border-radius:12px;padding:14px;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;margin-top:12px;line-height:1.6}
+
+/* BADGES */
+.badge-done{display:inline-flex;align-items:center;gap:4px;background:#DCFCE7;color:var(--green);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600}
+.badge-pending{display:inline-flex;align-items:center;gap:4px;background:#FEF9C3;color:#92400E;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600}
+
+/* NAV */
+.nav-hint{text-align:center;font-size:12px;color:var(--gray);margin-top:6px}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════ WELCOME -->
+<div id="s-welcome" class="screen active">
+  <div class="hdr"><div class="hdr-top"><span>🏠</span><div><div class="hdr-title">ManoirQuest</div><div class="hdr-sub">Calibration des tâches ménagères</div></div></div></div>
+  <div class="cnt">
+    <div class="hero">
+      <div class="hero-ico">📊</div>
+      <h1>Calibrons les points</h1>
+      <p>Chacun note indépendamment la pénibilité de chaque tâche.<br>Ensuite quelques comparaisons directes pour affiner.<br><strong style="color:var(--p)">~5 minutes par personne.</strong></p>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:12px">Qui joue ?</div>
+      <div class="pgrid">
+        <div class="pcard" id="pc-francis" onclick="startPlayer('francis')">
+          <div class="av">👨</div>
+          <div class="nm">Francis</div>
+          <div class="st" id="st-francis">À faire</div>
+        </div>
+        <div class="pcard" id="pc-ilona" onclick="startPlayer('ilona')">
+          <div class="av">👩</div>
+          <div class="nm">Ilona</div>
+          <div class="st" id="st-ilona">À faire</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="res-btn-card" style="display:none">
+      <button class="btn btn-p" onclick="showResults()">🏆 Voir les résultats combinés</button>
+      <div class="nav-hint" style="margin-top:8px">Disponible quand les deux ont terminé la notation</div>
+    </div>
+    <div class="card" style="background:var(--pl)">
+      <div style="font-size:12px;color:var(--gray);line-height:1.6">
+        ℹ️ Tes réponses sont <strong>sauvegardées automatiquement</strong> dans ce navigateur. Tu peux fermer et revenir plus tard. Les résultats ne s'affichent que quand vous avez tous les deux répondu aux notations.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ RATING -->
+<div id="s-rating" class="screen">
+  <div class="hdr">
+    <div class="hdr-top">
+      <span id="r-av">👨</span>
+      <div><div class="hdr-title" id="r-name">Francis</div><div class="hdr-sub">Notation de la pénibilité</div></div>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="r-prog" style="width:0%"></div></div>
+  </div>
+  <div class="cnt">
+    <div class="q-label" id="r-qnum"></div>
+    <div class="card">
+      <div class="task-big">
+        <span class="em" id="r-emoji"></span>
+        <span class="nm" id="r-task"></span>
+      </div>
+      <div class="rating-area">
+        <span class="r-emoji" id="r-face">😐</span>
+        <div class="r-val" id="r-val">5</div>
+        <div class="r-lbl" id="r-lbl">Assez relou</div>
+        <input type="range" id="r-slider" min="1" max="10" value="5" oninput="onSlider(this.value)">
+        <div class="r-ends"><span>😌 Pas de problème</span><span>🤬 Je déteste ça</span></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-s" onclick="ratingNav(-1)" id="r-prev">← Préc.</button>
+      <button class="btn btn-p" onclick="ratingNav(1)" id="r-next">Suiv. →</button>
+    </div>
+    <div class="nav-hint">Sauvegardé automatiquement</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ PAIRS -->
+<div id="s-pairs" class="screen">
+  <div class="hdr">
+    <div class="hdr-top">
+      <span id="p-av">👨</span>
+      <div><div class="hdr-title" id="p-name">Francis</div><div class="hdr-sub">Comparaisons directes</div></div>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="p-prog" style="width:0%"></div></div>
+  </div>
+  <div class="cnt">
+    <div class="q-label" id="p-qnum"></div>
+    <div class="card">
+      <div class="pair-intro">Laquelle de ces deux tâches <strong>te pèse le plus</strong> ?</div>
+      <button class="pair-btn" id="pb-a" onclick="pairVote(0)">
+        <span class="pb-em" id="p-em-a"></span>
+        <span class="pb-nm" id="p-nm-a"></span>
+      </button>
+      <div class="vs">VS</div>
+      <button class="pair-btn" id="pb-b" onclick="pairVote(1)">
+        <span class="pb-em" id="p-em-b"></span>
+        <span class="pb-nm" id="p-nm-b"></span>
+      </button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-s" onclick="pairNav(-1)">← Préc.</button>
+      <button class="btn btn-s" onclick="pairSkip()">Passer →</button>
+    </div>
+    <div class="nav-hint">Clique sur la tâche que tu détestes le plus faire</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ PLAYER DONE -->
+<div id="s-done" class="screen">
+  <div class="hdr"><div class="hdr-top"><span>✅</span><div><div class="hdr-title">Terminé !</div></div></div></div>
+  <div class="cnt">
+    <div class="done-hero">
+      <div class="ico">🎉</div>
+      <h2 id="done-name">Francis a fini !</h2>
+      <p id="done-msg">Passe maintenant à Ilona pour qu'elle réponde à son tour.</p>
+    </div>
+    <button class="btn btn-p" onclick="goWelcome()">← Retour à l'accueil</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ RESULTS -->
+<div id="s-results" class="screen">
+  <div class="hdr"><div class="hdr-top"><span>🏆</span><div><div class="hdr-title">Résultats — Barème calibré</div><div class="hdr-sub">Points suggérés pour ManoirQuest</div></div></div></div>
+  <div class="cnt">
+    <div class="card">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+        <span id="res-badge-f"></span>
+        <span id="res-badge-i"></span>
+      </div>
+      <div class="res-meta" id="res-meta"></div>
+      <div style="overflow-x:auto">
+        <table id="res-table">
+          <thead><tr><th>Tâche</th><th>👨</th><th>👩</th><th>Moy.</th><th>Pts</th><th style="width:60px">Pénib.</th></tr></thead>
+          <tbody id="res-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;margin-bottom:8px">📋 Exporter pour ManoirQuest</div>
+      <div style="font-size:12px;color:var(--gray);margin-bottom:8px">Copie ce JSON et remplace le tableau <code>catalogue</code> dans <code>scripts/migrate.js</code></div>
+      <div class="export-box" id="export-json"></div>
+      <button class="btn btn-s" style="margin-top:10px" onclick="copyExport()">📋 Copier le JSON</button>
+    </div>
+    <button class="btn btn-s" onclick="goWelcome()" style="margin-bottom:20px">← Retour à l'accueil</button>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const TASKS = [
+  {name:"Ranger la table de la salle à manger", emoji:"🍽️", dur:10, rec:"daily"},
+  {name:"Ranger l'espace salon",                emoji:"🛋️", dur:15, rec:"daily"},
+  {name:"Ranger le bureau de Francis",          emoji:"💻", dur:20, rec:"manual"},
+  {name:"Ranger la cuisine",                    emoji:"🍳", dur:20, rec:"daily"},
+  {name:"Laver le plan de travail",             emoji:"🧴", dur:10, rec:"daily"},
+  {name:"Remplir le lave-vaisselle",            emoji:"🫙", dur:10, rec:"daily"},
+  {name:"Vider le lave-vaisselle",              emoji:"🍽️", dur:10, rec:"daily"},
+  {name:"Balayer le rez-de-chaussée",           emoji:"🧹", dur:20, rec:"weekly"},
+  {name:"Passer la serpillière au rez-de-chaussée", emoji:"🪣", dur:25, rec:"weekly"},
+  {name:"Passer la serpillière à l'étage",      emoji:"🪣", dur:20, rec:"weekly"},
+  {name:"Laver le miroir du séjour",            emoji:"🪞", dur:10, rec:"weekly"},
+  {name:"Laver les vitres du rez-de-chaussée",  emoji:"🪟", dur:30, rec:"monthly"},
+  {name:"Désherber (30 minutes)",               emoji:"🌿", dur:30, rec:"manual"},
+  {name:"Balayer les escaliers et le couloir",  emoji:"🧹", dur:15, rec:"weekly"},
+  {name:"Ranger la salle de bain bleue",        emoji:"🛁", dur:15, rec:"weekly"},
+  {name:"Remplir la machine à laver",           emoji:"🧺", dur:15, rec:"manual"},
+  {name:"Étendre la machine à laver",           emoji:"👕", dur:20, rec:"manual"},
+  {name:"Ranger le linge étendu",               emoji:"📦", dur:25, rec:"manual"},
+  {name:"Ranger la chambre Ilona et Francis",   emoji:"🛏️", dur:20, rec:"weekly"},
+  {name:"Ranger la chambre des enfants",        emoji:"🧸", dur:20, rec:"weekly"},
+  {name:"Balayer la chambre Ilona et Francis",  emoji:"🧹", dur:15, rec:"weekly"},
+  {name:"Balayer la chambre des enfants",       emoji:"🧹", dur:15, rec:"weekly"},
+  {name:"Faire la caisse d'Ari",                emoji:"🐱", dur:10, rec:"biweekly"},
+  {name:"Faire la caisse d'Osti",               emoji:"🐈", dur:10, rec:"biweekly"},
+  {name:"Changer les draps du lit Ilona et Francis", emoji:"🛌", dur:25, rec:"biweekly"},
+  {name:"Changer les draps Elisa",              emoji:"🛌", dur:20, rec:"biweekly"},
+  {name:"Changer les draps Renaud",             emoji:"🛌", dur:20, rec:"biweekly"},
+  {name:"Laver les toilettes rez-de-chaussée",  emoji:"🚽", dur:15, rec:"weekly"},
+  {name:"Laver l'évier de la salle-de-bain bleue", emoji:"🚿", dur:10, rec:"weekly"},
+  {name:"Laver les toilettes à l'étage",        emoji:"🚽", dur:15, rec:"weekly"},
+  {name:"Mettre la table",                      emoji:"🍴", dur:5,  rec:"daily"},
+  {name:"Débarrasser ses affaires",             emoji:"🎒", dur:5,  rec:"daily"},
+  {name:"Débarrasser la table (en plus de ses affaires)", emoji:"🗑️", dur:10, rec:"daily"},
+  {name:"Faire à manger",                       emoji:"👨‍🍳", dur:45, rec:"daily"},
+];
+
+// Strategic pairs [idxA, idxB] — comparaisons entre tâches probablement proches
+const PAIRS = [
+  [5, 6],   // Remplir lave-vaisselle vs Vider lave-vaisselle
+  [0, 32],  // Ranger table vs Débarrasser table (en plus)
+  [7, 8],   // Balayer RdC vs Serpillière RdC
+  [8, 9],   // Serpillière RdC vs Serpillière étage
+  [10, 11], // Miroir séjour vs Vitres RdC
+  [15, 16], // Remplir machine vs Étendre linge
+  [16, 17], // Étendre linge vs Ranger linge étendu
+  [22, 23], // Caisse Ari vs Caisse Osti
+  [24, 25], // Draps adultes vs Draps Elisa
+  [25, 26], // Draps Elisa vs Draps Renaud
+  [27, 29], // Toilettes RdC vs Toilettes étage
+  [27, 28], // Toilettes RdC vs Évier salle de bain
+  [18, 19], // Ranger chambre adultes vs Ranger chambre enfants
+  [20, 21], // Balayer chambre adultes vs Balayer chambre enfants
+  [3, 33],  // Ranger cuisine vs Faire à manger
+  [30, 31], // Mettre table vs Débarrasser affaires
+  [12, 8],  // Désherber vs Serpillière RdC
+  [1, 2],   // Ranger salon vs Ranger bureau
+];
+
+const LABELS = [
+  "", // index 0 unused
+  "Pas de problème", "Pas de problème",
+  "Un peu chiant", "Un peu chiant",
+  "Assez relou", "Assez relou",
+  "Je déteste ça", "Je déteste ça",
+  "Calvaire", "CAUCHEMAR 💀"
+];
+const FACES = [
+  "","😌","😌","😐","😐","😒","😒","😤","😤","🤬","💀"
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let currentPlayer = null;
+let ratingIdx = 0;
+let pairIdx = 0;
+
+function load() {
+  const raw = localStorage.getItem('mq-calibration');
+  return raw ? JSON.parse(raw) : { francis: {ratings:{}, pairs:{}}, ilona: {ratings:{}, pairs:{}} };
+}
+function save(data) { localStorage.setItem('mq-calibration', JSON.stringify(data)); }
+
+// ── WELCOME ───────────────────────────────────────────────────────────────────
+function goWelcome() {
+  const data = load();
+  ['francis','ilona'].forEach(p => {
+    const pc = document.getElementById('pc-' + p);
+    const st = document.getElementById('st-' + p);
+    const rCount = Object.keys(data[p].ratings).length;
+    const done = rCount >= TASKS.length;
+    pc.classList.toggle('done-card', done);
+    st.textContent = done
+      ? `✅ Notation complète (${Object.keys(data[p].pairs).length} comparaisons)`
+      : rCount > 0
+        ? `▶ En cours (${rCount}/${TASKS.length})`
+        : 'À faire';
+  });
+  const bothDone = Object.keys(data.francis.ratings).length >= TASKS.length
+                && Object.keys(data.ilona.ratings).length >= TASKS.length;
+  document.getElementById('res-btn-card').style.display = bothDone ? 'block' : 'none';
+  showScreen('s-welcome');
+}
+
+function startPlayer(player) {
+  const data = load();
+  currentPlayer = player;
+  const rCount = Object.keys(data[player].ratings).length;
+  ratingIdx = rCount < TASKS.length ? rCount : 0;
+  // If all ratings done, go to pairs
+  if (rCount >= TASKS.length) {
+    const pCount = Object.keys(data[player].pairs).length;
+    if (pCount >= PAIRS.length) {
+      // Already fully done — allow re-review
+      ratingIdx = 0;
+    }
+    pairIdx = pCount < PAIRS.length ? pCount : 0;
+    // Check if pairs done too
+    if (Object.keys(data[player].pairs).length >= PAIRS.length) {
+      showDone();
+      return;
+    }
+    showPairs();
+    return;
+  }
+  showRating();
+}
+
+// ── RATING PHASE ──────────────────────────────────────────────────────────────
+function showRating() {
+  const data = load();
+  const p = currentPlayer;
+  const av = p === 'francis' ? '👨' : '👩';
+  const nm = p === 'francis' ? 'Francis' : 'Ilona';
+  document.getElementById('r-av').textContent = av;
+  document.getElementById('r-name').textContent = nm;
+  document.getElementById('p-av').textContent = av;
+  document.getElementById('p-name').textContent = nm;
+  renderRatingQ(data);
+  showScreen('s-rating');
+}
+
+function renderRatingQ(data) {
+  if (ratingIdx < 0) ratingIdx = 0;
+  if (ratingIdx >= TASKS.length) { finishRatings(); return; }
+  const task = TASKS[ratingIdx];
+  const val = data[currentPlayer].ratings[ratingIdx] ?? 5;
+  document.getElementById('r-emoji').textContent = task.emoji;
+  document.getElementById('r-task').textContent = task.name;
+  document.getElementById('r-slider').value = val;
+  document.getElementById('r-qnum').textContent = `Question ${ratingIdx+1} sur ${TASKS.length} — Notation de pénibilité`;
+  document.getElementById('r-prog').style.width = ((ratingIdx+1)/TASKS.length*100) + '%';
+  updateFace(val);
+  document.getElementById('r-prev').style.visibility = ratingIdx === 0 ? 'hidden' : 'visible';
+  document.getElementById('r-next').textContent = ratingIdx === TASKS.length-1 ? 'Terminer ✓' : 'Suiv. →';
+}
+
+function onSlider(val) {
+  const v = parseInt(val);
+  const data = load();
+  data[currentPlayer].ratings[ratingIdx] = v;
+  save(data);
+  updateFace(v);
+}
+
+function updateFace(v) {
+  v = parseInt(v);
+  document.getElementById('r-face').textContent = FACES[v] || '😐';
+  document.getElementById('r-val').textContent = v;
+  document.getElementById('r-lbl').textContent = LABELS[v] || '';
+}
+
+function ratingNav(dir) {
+  const data = load();
+  // Save current value before moving
+  const cur = parseInt(document.getElementById('r-slider').value);
+  data[currentPlayer].ratings[ratingIdx] = cur;
+  save(data);
+  ratingIdx += dir;
+  if (ratingIdx >= TASKS.length) { finishRatings(); return; }
+  if (ratingIdx < 0) ratingIdx = 0;
+  renderRatingQ(data);
+}
+
+function finishRatings() {
+  // All tasks rated — move to pairs
+  pairIdx = 0;
+  showPairs();
+}
+
+// ── PAIRS PHASE ───────────────────────────────────────────────────────────────
+function showPairs() {
+  const data = load();
+  renderPairQ(data);
+  showScreen('s-pairs');
+}
+
+function renderPairQ(data) {
+  if (pairIdx < 0) pairIdx = 0;
+  if (pairIdx >= PAIRS.length) { showDone(); return; }
+  const [a, b] = PAIRS[pairIdx];
+  document.getElementById('p-em-a').textContent = TASKS[a].emoji;
+  document.getElementById('p-nm-a').textContent = TASKS[a].name;
+  document.getElementById('p-em-b').textContent = TASKS[b].emoji;
+  document.getElementById('p-nm-b').textContent = TASKS[b].name;
+  document.getElementById('p-qnum').textContent = `Comparaison ${pairIdx+1} sur ${PAIRS.length}`;
+  document.getElementById('p-prog').style.width = ((pairIdx+1)/PAIRS.length*100) + '%';
+  // Highlight previous vote if exists
+  const prev = data[currentPlayer].pairs[pairIdx];
+  document.getElementById('pb-a').style.borderColor = prev === 0 ? 'var(--red)' : '#E5E7EB';
+  document.getElementById('pb-a').style.background  = prev === 0 ? '#FEF2F2' : 'white';
+  document.getElementById('pb-b').style.borderColor = prev === 1 ? 'var(--red)' : '#E5E7EB';
+  document.getElementById('pb-b').style.background  = prev === 1 ? '#FEF2F2' : 'white';
+}
+
+function pairVote(choice) {
+  const data = load();
+  data[currentPlayer].pairs[pairIdx] = choice;
+  save(data);
+  pairIdx++;
+  if (pairIdx >= PAIRS.length) { showDone(); return; }
+  renderPairQ(data);
+}
+
+function pairNav(dir) {
+  pairIdx += dir;
+  const data = load();
+  renderPairQ(data);
+}
+
+function pairSkip() {
+  pairIdx++;
+  const data = load();
+  if (pairIdx >= PAIRS.length) { showDone(); return; }
+  renderPairQ(data);
+}
+
+// ── DONE ──────────────────────────────────────────────────────────────────────
+function showDone() {
+  const nm = currentPlayer === 'francis' ? 'Francis' : 'Ilona';
+  const other = currentPlayer === 'francis' ? 'Ilona' : 'Francis';
+  document.getElementById('done-name').textContent = nm + ' a terminé ! 🎉';
+  document.getElementById('done-msg').textContent =
+    `Passe maintenant à ${other} pour qu'${other === 'Ilona' ? 'elle' : 'il'} réponde à son tour. Les résultats s'affichent quand vous avez tous les deux terminé la notation.`;
+  showScreen('s-done');
+}
+
+// ── RESULTS ───────────────────────────────────────────────────────────────────
+function computePoints(taskIdx, data) {
+  const fr = data.francis.ratings[taskIdx] ?? null;
+  const il = data.ilona.ratings[taskIdx] ?? null;
+  if (fr === null && il === null) return {fr:null, il:null, avg:null, pts:null};
+
+  const avg = fr !== null && il !== null ? (fr + il) / 2
+            : fr !== null ? fr : il;
+
+  // Pairwise micro-adjustment (+0.4 per win, capped)
+  let adj = 0;
+  for (let pi = 0; pi < PAIRS.length; pi++) {
+    const [a, b] = PAIRS[pi];
+    const fw = data.francis.pairs[pi];
+    const iw = data.ilona.pairs[pi];
+    const votes = [fw, iw].filter(v => v !== undefined);
+    if (!votes.length) continue;
+    const worstIdx = votes.reduce((acc, v) => {
+      const idx = v === 0 ? a : b;
+      acc[idx] = (acc[idx] || 0) + 1;
+      return acc;
+    }, {});
+    const winsA = worstIdx[a] || 0;
+    const winsB = worstIdx[b] || 0;
+    if (a === taskIdx && winsA > winsB) adj += 0.3;
+    if (b === taskIdx && winsB > winsA) adj += 0.3;
+  }
+  adj = Math.min(adj, 1.5);
+  const final = Math.min(10, avg + adj);
+
+  // 1→10, 10→50 — rounded to nearest 5
+  const raw = 10 + (final - 1) * (50 - 10) / 9;
+  const pts = Math.max(10, Math.round(raw / 5) * 5);
+
+  return { fr, il, avg: Math.round(avg * 10) / 10, pts };
+}
+
+function showResults() {
+  const data = load();
+  const body = document.getElementById('res-body');
+  body.innerHTML = '';
+
+  const fr_done = Object.keys(data.francis.ratings).length >= TASKS.length;
+  const il_done = Object.keys(data.ilona.ratings).length >= TASKS.length;
+
+  document.getElementById('res-badge-f').innerHTML =
+    fr_done ? '<span class="badge-done">✅ Francis</span>' : '<span class="badge-pending">⏳ Francis</span>';
+  document.getElementById('res-badge-i').innerHTML =
+    il_done ? '<span class="badge-done">✅ Ilona</span>' : '<span class="badge-pending">⏳ Ilona</span>';
+  document.getElementById('res-meta').textContent =
+    'Tâches triées par pénibilité décroissante · Clique sur la ligne pour modifier';
+
+  // Build results array
+  const results = TASKS.map((t, i) => ({...t, idx:i, ...computePoints(i, data)}));
+  results.sort((a,b) => (b.avg||0) - (a.avg||0));
+
+  const maxPts = Math.max(...results.map(r => r.pts || 0));
+
+  results.forEach(r => {
+    const tr = document.createElement('tr');
+    const frCell = r.fr !== null ? `<strong>${r.fr}</strong>/10` : '<span style="color:#D1D5DB">—</span>';
+    const ilCell = r.il !== null ? `<strong>${r.il}</strong>/10` : '<span style="color:#D1D5DB">—</span>';
+    const avgCell = r.avg !== null ? r.avg : '—';
+    const ptsCell = r.pts !== null ? `<span class="pts">${r.pts}pts</span>` : '—';
+    const barPct = r.pts ? Math.round(r.pts / maxPts * 100) : 0;
+    tr.innerHTML = `
+      <td>${r.emoji} ${r.name}</td>
+      <td>${frCell}</td>
+      <td>${ilCell}</td>
+      <td>${avgCell}</td>
+      <td>${ptsCell}</td>
+      <td class="bar-cell"><div class="bar-bg"><div class="bar-fill" style="width:${barPct}%"></div></div></td>`;
+    body.appendChild(tr);
+  });
+
+  // Export JSON
+  const catalogue = results.map(r => [
+    r.name, r.emoji, '', r.pts || 20, 2, r.dur, r.rec
+  ]);
+  document.getElementById('export-json').textContent =
+    '// Coller dans scripts/migrate.js, tableau catalogue\n' +
+    'const catalogue = [\n' +
+    catalogue.map(c =>
+      `  ${JSON.stringify(c)}`
+    ).join(',\n') +
+    '\n];';
+
+  showScreen('s-results');
+}
+
+function copyExport() {
+  const text = document.getElementById('export-json').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    btn.textContent = '✅ Copié !';
+    setTimeout(() => btn.textContent = '📋 Copier le JSON', 2000);
+  });
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+goWelcome();
+</script>
+</body>
+</html>
