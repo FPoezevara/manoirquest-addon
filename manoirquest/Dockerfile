@@ -4,11 +4,7 @@ FROM $BUILD_FROM
 # ── System deps ─────────────────────────────────────────────────────────
 RUN apk add --no-cache \
     nodejs \
-    npm \
-    python3 \
-    make \
-    g++ \
-    sqlite
+    npm
 
 # ── App ─────────────────────────────────────────────────────────────────
 WORKDIR /app

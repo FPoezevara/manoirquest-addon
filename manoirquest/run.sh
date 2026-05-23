@@ -18,7 +18,7 @@ bashio::log.info "Database: ${DB_PATH}"
 
 # ── Run migrations & seed if first start ─────────────────────────────────
 cd /app
-node scripts/migrate.js
+node --experimental-sqlite scripts/migrate.js
 bashio::log.info "Database ready"
 
 # ── Start server ─────────────────────────────────────────────────────────
