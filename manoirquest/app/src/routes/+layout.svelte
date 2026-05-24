@@ -3,6 +3,12 @@
 	import { page } from '$app/stores';
 	export let data: LayoutData;
 
+	// Préfixe d'ingress runtime (vide hors ingress)
+	$: base = data.base ?? '';
+	// Chemin courant débarrassé du préfixe, pour l'état actif de la nav.
+	// Côté SSR pathname est déjà nu ; côté client il porte le préfixe → on le retire.
+	$: current = $page.url.pathname.replace(base, '') || '/';
+
 	const navItems = [
 		{ href: '/',            icon: '🏠', label: 'Maison'     },
 		{ href: '/tasks',       icon: '📋', label: 'Tâches'     },
@@ -11,8 +17,8 @@
 	];
 
 	async function logout() {
-		await fetch('/api/auth', { method: 'POST' });
-		window.location.href = '/login';
+		await fetch(`${base}/api/auth`, { method: 'POST' });
+		window.location.href = `${base}/login`;
 	}
 </script>
 
@@ -41,9 +47,9 @@
 	<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10 safe-area-bottom">
 		<div class="flex">
 			{#each navItems as item}
-				{@const active = $page.url.pathname === item.href}
+				{@const active = current === item.href}
 				<a
-					href={item.href}
+					href={base + item.href}
 					class="flex-1 flex flex-col items-center py-2 text-xs gap-0.5 transition-colors
 					       {active ? 'text-purple-700 font-semibold' : 'text-gray-500'}"
 				>

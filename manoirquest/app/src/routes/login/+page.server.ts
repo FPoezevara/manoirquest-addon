@@ -5,7 +5,7 @@ import { verifyPin, createSession } from '$lib/server/auth';
 import type { User } from '$lib/db/schema';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (locals.user) throw redirect(302, '/');
+	if (locals.user) throw redirect(302, `${locals.base}/`);
 	const players = all<Pick<User, 'id' | 'name' | 'avatar' | 'role'>>(
 		'SELECT id, name, avatar, role FROM users ORDER BY id'
 	);
@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	login: async ({ request, cookies }) => {
+	login: async ({ request, cookies, locals }) => {
 		const data   = await request.formData();
 		const userId = Number(data.get('userId'));
 		const pin    = String(data.get('pin') ?? '');
@@ -31,9 +31,9 @@ export const actions: Actions = {
 			httpOnly: true,
 			sameSite: 'lax',
 			maxAge: 72 * 3600,
-			secure: process.env.NODE_ENV === 'production'
+			secure: false // app servie sous ingress (iframe) / LAN — pas de Secure pour éviter les rejets
 		});
 
-		throw redirect(302, '/');
+		throw redirect(302, `${locals.base}/`);
 	}
 };

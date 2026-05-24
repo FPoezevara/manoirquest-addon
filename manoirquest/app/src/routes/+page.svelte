@@ -2,6 +2,8 @@
 	import type { PageData } from './$types';
 	export let data: PageData;
 
+	$: base = data.base ?? '';
+
 	$: houseColor = data.houseScore >= 75 ? 'bg-green-500'
 		: data.houseScore >= 40 ? 'bg-yellow-400'
 		: 'bg-red-400';
@@ -57,12 +59,12 @@
 						</span>
 					</div>
 					<div class="flex gap-2">
-						<form method="POST" action="/tasks?/validate">
+						<form method="POST" action="{base}/tasks?/validate">
 							<input type="hidden" name="instanceId" value={inst.id} />
 							<input type="hidden" name="approved" value="true" />
 							<button class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium">✓</button>
 						</form>
-						<form method="POST" action="/tasks?/refuse">
+						<form method="POST" action="{base}/tasks?/refuse">
 							<input type="hidden" name="instanceId" value={inst.id} />
 							<button class="bg-red-400 text-white px-3 py-1.5 rounded-lg text-sm font-medium">✗</button>
 						</form>
@@ -83,7 +85,7 @@
 					<span class="text-xs text-purple-600 font-semibold">+{inst.task?.points}pts</span>
 				</div>
 			{/each}
-			<a href="/tasks" class="block text-center text-purple-600 text-sm font-medium mt-3">
+			<a href="{base}/tasks" class="block text-center text-purple-600 text-sm font-medium mt-3">
 				Voir toutes les tâches →
 			</a>
 		</div>
