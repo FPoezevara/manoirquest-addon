@@ -1,4 +1,5 @@
 <script lang="ts">
+	import '../app.css';
 	import type { LayoutData } from './$types';
 	import { page } from '$app/stores';
 	export let data: LayoutData;
@@ -16,41 +17,24 @@
 	];
 </script>
 
-<div class="flex flex-col min-h-screen bg-gray-50">
-	<!-- Top bar -->
-	<header class="bg-purple-700 text-white px-4 py-3 flex items-center gap-2 shadow-md sticky top-0 z-10">
-		<span class="text-xl">🏠</span>
-		<span class="font-bold text-lg">ManoirQuest</span>
-		<span class="ml-auto text-xs text-purple-200">Tableau familial</span>
+<div class="app">
+	<header class="app-header">
+		<span class="logo">🏠</span>
+		<span class="title">ManoirQuest</span>
+		<span class="sub">Tableau familial</span>
 	</header>
 
-	<!-- Content -->
-	<main class="flex-1 pb-20 overflow-y-auto">
+	<main class="app-main">
 		<slot />
 	</main>
 
-	<!-- Bottom nav -->
-	<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10 safe-area-bottom">
-		<div class="flex">
-			{#each navItems as item}
-				{@const active = current === item.href}
-				<a
-					href={base + item.href}
-					class="relative flex-1 flex flex-col items-center py-2 text-xs gap-0.5 transition-colors
-					       {active ? 'text-purple-700 font-semibold' : 'text-gray-500'}"
-				>
-					<span class="text-xl">{item.icon}</span>
-					<span>{item.label}</span>
-					{#if active}
-						<span class="absolute bottom-0 w-8 h-0.5 bg-purple-600 rounded-t-full"></span>
-					{/if}
-				</a>
-			{/each}
-		</div>
+	<nav class="tabbar">
+		{#each navItems as item}
+			{@const active = current === item.href}
+			<a href={base + item.href} class="tab" class:active>
+				<span class="ic">{item.icon}</span>
+				<span>{item.label}</span>
+			</a>
+		{/each}
 	</nav>
 </div>
-
-<style>
-	:global(body) { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-	.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
-</style>

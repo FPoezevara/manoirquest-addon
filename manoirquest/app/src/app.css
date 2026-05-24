@@ -1,0 +1,203 @@
+/* ===========================================================================
+   ManoirQuest — design system iOS dark (thème ios-dark-mode-blue-red)
+   Tokens recopiés du thème HA : accent orange systemOrange #ff9f09, gris iOS,
+   radius 20px, texte blanc/#d3d3d3. Version sobre sans le dégradé HomeKit.
+   =========================================================================== */
+
+:root {
+	--bg: #1c1c1e;            /* fond de page (systemGray6) */
+	--surface: #2c2c2e;       /* cartes — primary-background-color du thème */
+	--surface-2: #23232e;     /* chips / éléments internes — label-badge bg */
+	--surface-3: #3a3a3c;     /* survol / pressé */
+	--text: #ffffff;
+	--text-2: #d3d3d3;        /* secondary-text-color du thème */
+	--text-3: #8e8e93;        /* systemGray */
+	--disabled: #555555;
+	--hairline: rgba(152, 152, 157, 0.3);  /* divider-color du thème */
+	--accent: #ff9f09;        /* primary-color / accent (systemOrange) */
+	--accent-ink: #211500;    /* texte sur fond accent */
+	--blue: #0984ff;          /* systemBlue (sliders) */
+	--green: #30d158;         /* systemGreen (positif / points) */
+	--yellow: #ffd60a;        /* state-icon-active */
+	--radius: 20px;
+	--radius-sm: 14px;
+	--radius-xs: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+	background: var(--bg);
+	color: var(--text);
+	font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+/* ── Coque ────────────────────────────────────────────────────────────────── */
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+
+.app-header {
+	position: sticky; top: 0; z-index: 20;
+	display: flex; align-items: center; gap: 10px;
+	padding: 14px 18px;
+	background: rgba(28, 28, 30, 0.8);
+	-webkit-backdrop-filter: saturate(180%) blur(20px);
+	backdrop-filter: saturate(180%) blur(20px);
+	border-bottom: 0.5px solid var(--hairline);
+}
+.app-header .logo { font-size: 22px; line-height: 1; }
+.app-header .title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.app-header .sub { margin-left: auto; font-size: 12px; color: var(--text-3); }
+
+.app-main {
+	flex: 1;
+	width: 100%; max-width: 540px; margin: 0 auto;
+	padding: 18px 16px calc(86px + env(safe-area-inset-bottom));
+}
+
+/* ── Tab bar ──────────────────────────────────────────────────────────────── */
+.tabbar {
+	position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+	display: flex;
+	background: rgba(28, 28, 30, 0.86);
+	-webkit-backdrop-filter: saturate(180%) blur(20px);
+	backdrop-filter: saturate(180%) blur(20px);
+	border-top: 0.5px solid var(--hairline);
+	padding-bottom: env(safe-area-inset-bottom);
+}
+.tab {
+	position: relative;
+	flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+	padding: 9px 0 8px;
+	text-decoration: none; color: var(--text-3);
+	font-size: 11px; transition: color 0.15s;
+}
+.tab .ic { font-size: 22px; line-height: 1; }
+.tab.active { color: var(--accent); font-weight: 600; }
+
+/* ── Layout helpers ──────────────────────────────────────────────────────── */
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.row { display: flex; align-items: center; gap: 10px; }
+.between { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.grow { flex: 1; min-width: 0; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.muted { color: var(--text-2); }
+.dim { color: var(--text-3); }
+.tiny { font-size: 12px; }
+.small { font-size: 13px; }
+.center { text-align: center; }
+
+/* ── Cartes ──────────────────────────────────────────────────────────────── */
+.card {
+	background: var(--surface);
+	border: 0.5px solid var(--hairline);
+	border-radius: var(--radius);
+	padding: 16px;
+}
+.card-h { font-size: 15px; font-weight: 600; margin: 0 0 12px; }
+.card-h.bare { margin-bottom: 6px; }
+
+/* ── Pastilles / points ──────────────────────────────────────────────────── */
+.pts { color: var(--accent); font-weight: 700; }
+.pts-pos { color: var(--green); font-weight: 600; }
+.lvl { font-size: 12px; color: var(--text-3); }
+.chips { font-size: 14px; letter-spacing: 1px; }
+.avatar { line-height: 1; }
+
+/* ── Jauge / progression ─────────────────────────────────────────────────── */
+.gauge { width: 100%; height: 14px; background: rgba(255, 255, 255, 0.1); border-radius: 999px; overflow: hidden; }
+.gauge > span { display: block; height: 100%; border-radius: 999px; transition: width 0.7s ease; }
+.progress { height: 8px; background: rgba(255, 255, 255, 0.15); border-radius: 999px; overflow: hidden; }
+.progress > span { display: block; height: 100%; background: var(--yellow); border-radius: 999px; transition: width 0.5s; }
+
+/* ── Listes (séparateurs hairline) ───────────────────────────────────────── */
+.list-row { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 0.5px solid var(--hairline); }
+.list-row:last-child { border-bottom: 0; }
+.rank { width: 26px; text-align: center; font-size: 16px; }
+
+/* ── Sélecteur de personne (profil) + picker (tâches) ────────────────────── */
+.people { display: flex; gap: 8px; }
+.person {
+	flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+	padding: 9px 4px; border-radius: var(--radius-sm);
+	border: 0.5px solid var(--hairline); background: var(--surface);
+	color: var(--text-2); text-decoration: none; cursor: pointer;
+	font-size: 11px; transition: transform 0.1s, background 0.15s, border-color 0.15s;
+}
+.person .av { font-size: 26px; }
+.person:active { transform: scale(0.95); }
+.person.sel { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+
+.picker { display: flex; gap: 8px; margin: 0; padding: 0; border: 0; }
+.pick {
+	flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+	padding: 8px 2px; border-radius: var(--radius-sm);
+	border: 0.5px solid var(--hairline); background: var(--surface-2);
+	color: var(--text-2); cursor: pointer; font: inherit; font-size: 11px;
+	transition: transform 0.1s, background 0.15s;
+}
+.pick .av { font-size: 24px; }
+.pick:hover { background: var(--surface-3); }
+.pick:active { transform: scale(0.94); }
+
+/* ── Boutons ─────────────────────────────────────────────────────────────── */
+.btn {
+	border: 0; border-radius: var(--radius-xs); padding: 8px 14px;
+	font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+	transition: transform 0.1s, opacity 0.15s;
+}
+.btn:active { transform: scale(0.96); }
+.btn-accent { background: var(--accent); color: var(--accent-ink); }
+.btn-off { background: var(--surface-3); color: var(--text-3); cursor: not-allowed; }
+.btn-off:active { transform: none; }
+
+/* ── Segmented control (classement) ──────────────────────────────────────── */
+.seg { display: flex; background: var(--surface-2); border-radius: var(--radius-xs); padding: 3px; margin-bottom: 20px; }
+.seg button {
+	flex: 1; border: 0; background: transparent; color: var(--text-3);
+	font: inherit; font-size: 13px; font-weight: 600; padding: 7px 0;
+	border-radius: 8px; cursor: pointer; transition: background 0.15s, color 0.15s;
+}
+.seg button.on { background: var(--surface-3); color: var(--text); }
+
+/* ── Podium ──────────────────────────────────────────────────────────────── */
+.podium { display: flex; align-items: flex-end; justify-content: center; gap: 12px; margin-bottom: 22px; }
+.podium-col { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.podium-col .av { font-size: 40px; margin-bottom: 2px; }
+.podium-col .nm { font-size: 13px; font-weight: 600; }
+.podium-bar { width: 100%; margin-top: 8px; border-radius: 10px 10px 0 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; font-weight: 700; font-size: 13px; color: #000; }
+.podium-bar.gold { height: 92px; background: var(--accent); }
+.podium-bar.silver { height: 64px; background: #aeaeb2; }
+.podium-bar.bronze { height: 42px; background: #b9743f; }
+
+/* ── Profil : carte joueur ───────────────────────────────────────────────── */
+.hero {
+	background: var(--surface); border: 0.5px solid var(--hairline);
+	border-radius: var(--radius); padding: 18px;
+}
+.hero .big { font-size: 56px; line-height: 1; }
+.hero .name { font-size: 22px; font-weight: 700; }
+.hero .total { font-size: 30px; font-weight: 700; }
+
+/* ── Badges ──────────────────────────────────────────────────────────────── */
+.badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.badge { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; padding: 10px 4px; background: var(--surface-2); border-radius: var(--radius-sm); }
+.badge .em { font-size: 30px; }
+.badge .nm { font-size: 11px; color: var(--text-2); }
+
+/* ── Bannières ───────────────────────────────────────────────────────────── */
+.banner { border-radius: var(--radius-sm); padding: 9px 14px; font-size: 14px; }
+.banner-ok { background: rgba(48, 209, 88, 0.15); color: #5be584; border: 0.5px solid rgba(48, 209, 88, 0.4); }
+.banner-err { background: rgba(255, 69, 58, 0.15); color: #ff8a80; border: 0.5px solid rgba(255, 69, 58, 0.4); }
+
+/* ── Divers ──────────────────────────────────────────────────────────────── */
+.empty { text-align: center; padding: 36px 0; color: var(--text-3); }
+.empty .em { font-size: 44px; }
+.task-card { background: var(--surface); border: 0.5px solid var(--hairline); border-radius: var(--radius); padding: 14px; }
+.task-emoji { font-size: 30px; }
+.diff-1 { color: var(--green); }
+.diff-2 { color: var(--yellow); }
+.diff-3 { color: #ff453a; }
