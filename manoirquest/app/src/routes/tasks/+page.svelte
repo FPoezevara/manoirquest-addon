@@ -3,6 +3,7 @@
 	export let data: PageData;
 	export let form: ActionData;
 
+	const DAY = ['', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'];
 	const diffLabel = (d: number) => ['', '★', '★★', '★★★'][d] ?? '';
 	const diffClass = (d: number) => `diff-${d}`;
 </script>
@@ -15,22 +16,36 @@
 		<div class="banner banner-err">{form.error}</div>
 	{:else if form?.success}
 		<div class="banner banner-ok">Tâche validée, points attribués ! 🎉</div>
+	{:else if form?.added}
+		<div class="banner banner-ok">Tâche ajoutée à faire.</div>
 	{/if}
 
-	<div>
-		<h2 class="card-h bare">📋 Tâches à faire {#if data.available.length > 0}<span class="dim" style="font-weight:400">({data.available.length})</span>{/if}</h2>
-		<p class="tiny dim" style="margin:0 0 12px">Touche l'avatar de la personne qui a fait la tâche.</p>
+	<!-- Ajout manuel d'une occurrence -->
+	<form method="POST" action="?/add" class="card add-form">
+		<span class="add-plus">＋</span>
+		<select name="taskId" class="select grow" aria-label="Tâche à ajouter">
+			<option value="" selected disabled>Ajouter une tâche à faire…</option>
+			{#each data.catalogue as t}
+				<option value={t.id}>{t.emoji} {t.name}</option>
+			{/each}
+		</select>
+		<button class="btn btn-accent">Ajouter</button>
+	</form>
 
-		{#if data.available.length === 0}
-			<div class="empty">
-				<div class="em">🎉</div>
-				<p style="font-weight:500; margin:6px 0 0">Toutes les tâches de la semaine sont faites !</p>
-			</div>
-		{:else}
+	{#if data.groups.length === 0}
+		<div class="empty">
+			<div class="em">🎉</div>
+			<p style="font-weight:500; margin:6px 0 0">Rien à faire pour le moment !</p>
+		</div>
+	{/if}
+
+	{#each data.groups as group}
+		<section>
+			<div class="group-h">{group.label} <span class="dim">· {group.items.length}</span></div>
 			<div class="stack" style="gap:10px">
-				{#each data.available as inst}
+				{#each group.items as inst}
 					<div class="task-card">
-						<div class="row" style="margin-bottom:12px">
+						<div class="row" style="margin-bottom:10px">
 							<span class="task-emoji">{inst.task.emoji}</span>
 							<div class="grow">
 								<p style="font-weight:600; margin:0">{inst.task.name}</p>
@@ -39,6 +54,11 @@
 									· ~{inst.task.durationMin} min
 									· <span class="pts">+{inst.task.points} pts</span>
 								</p>
+								{#if group.key === 'weekdays'}
+									<div class="daychips">
+										{#each inst.task.scheduleDays as d}<span class="daychip">{DAY[d]}</span>{/each}
+									</div>
+								{/if}
 							</div>
 						</div>
 						<form method="POST" action="?/complete" class="picker">
@@ -53,22 +73,7 @@
 					</div>
 				{/each}
 			</div>
-		{/if}
-	</div>
-
-	{#if data.recentDone.length > 0}
-		<div class="card">
-			<h2 class="card-h">✅ Dernières faites</h2>
-			{#each data.recentDone as inst}
-				<div class="list-row small">
-					<span>{inst.claimedByUser?.avatar ?? '🧑'}</span>
-					<span class="muted">{inst.claimedByUser?.name ?? '—'}</span>
-					<span>{inst.task.emoji}</span>
-					<span class="grow truncate">{inst.task.name}</span>
-					<span class="pts-pos tiny">+{inst.pointsAwarded}</span>
-				</div>
-			{/each}
-		</div>
-	{/if}
+		</section>
+	{/each}
 
 </div>

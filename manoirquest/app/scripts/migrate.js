@@ -211,4 +211,20 @@ if (count.n === 0) {
   console.log(`Base existante (${count.n} utilisateurs) — migration OK.`);
 }
 
+// ── Migration : planning par jour (sched_kind / sched_days) ───────────────────
+// Additif et idempotent, exécuté après le seed pour couvrir base existante ET neuve.
+// Backfill UNE seule fois depuis l'ancienne colonne recurrence (au moment de l'ajout
+// des colonnes), donc les réglages faits ensuite via l'app ne sont jamais écrasés.
+const taskCols = db.prepare('PRAGMA table_info(tasks)').all().map((c) => c.name);
+if (!taskCols.includes('sched_kind')) {
+  db.exec("ALTER TABLE tasks ADD COLUMN sched_kind TEXT NOT NULL DEFAULT 'weekly'");
+  db.exec("ALTER TABLE tasks ADD COLUMN sched_days TEXT NOT NULL DEFAULT ''");
+  db.exec("UPDATE tasks SET sched_kind='weekdays', sched_days='1,2,3,4,5,6,7' WHERE recurrence='daily'");
+  db.exec("UPDATE tasks SET sched_kind='weekly'   WHERE recurrence='weekly'");
+  db.exec("UPDATE tasks SET sched_kind='biweekly' WHERE recurrence='biweekly'");
+  db.exec("UPDATE tasks SET sched_kind='monthly'  WHERE recurrence='monthly'");
+  db.exec("UPDATE tasks SET sched_kind='manual'   WHERE recurrence IN ('manual','none')");
+  console.log('  ✓ Migration sched_kind/sched_days appliquée');
+}
+
 console.log('Schéma à jour ✅');

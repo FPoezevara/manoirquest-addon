@@ -3,6 +3,7 @@
 
 export type Role = 'parent' | 'child';
 export type Recurrence = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'manual';
+export type ScheduleKind = 'weekdays' | 'weekly' | 'biweekly' | 'monthly' | 'manual';
 export type TaskStatus = 'pending' | 'claimed' | 'awaiting_validation' | 'done' | 'refused';
 export type RewardStatus = 'pending' | 'approved' | 'refused';
 export type BadgeTrigger = 'total_points' | 'weekly_points' | 'streak_days' | 'task_count' | 'specific_task' | 'secret';
@@ -28,7 +29,9 @@ export interface Task {
 	points: number;
 	difficulty: number;
 	duration_min: number;
-	recurrence: Recurrence;
+	recurrence: Recurrence;   // legacy — conservé, plus utilisé pour la génération
+	sched_kind: ScheduleKind;
+	sched_days: string;        // CSV des jours 1=lun … 7=dim (si sched_kind='weekdays')
 	is_active: number;  // SQLite stores booleans as 0/1
 	created_at: string;
 }
@@ -137,6 +140,8 @@ export interface InstanceDTO {
 		points: number;
 		difficulty: number;
 		durationMin: number;
+		scheduleKind: ScheduleKind;
+		scheduleDays: number[];
 	};
 	claimedByUser: { id: number; name: string; avatar: string } | null;
 }

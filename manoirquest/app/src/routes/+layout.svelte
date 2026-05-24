@@ -4,14 +4,13 @@
 	import { page } from '$app/stores';
 	export let data: LayoutData;
 
-	// Préfixe d'ingress runtime (vide hors ingress)
 	$: base = data.base ?? '';
-	// Chemin courant débarrassé du préfixe, pour l'état actif de la nav.
 	$: current = $page.url.pathname.replace(base, '') || '/';
 
 	const navItems = [
 		{ href: '/',            icon: '🏠', label: 'Maison'     },
 		{ href: '/tasks',       icon: '📋', label: 'Tâches'     },
+		{ href: '/done',        icon: '✅', label: 'Faites'     },
 		{ href: '/leaderboard', icon: '🏆', label: 'Classement' },
 		{ href: '/profile',     icon: '👤', label: 'Profil'     },
 	];
@@ -21,7 +20,7 @@
 	<header class="app-header">
 		<span class="logo">🏠</span>
 		<span class="title">ManoirQuest</span>
-		<span class="sub">Tableau familial</span>
+		<a href="{base}/settings" class="gear" class:active={current === '/settings'} aria-label="Réglages des tâches" title="Réglages">⚙️</a>
 	</header>
 
 	<main class="app-main">

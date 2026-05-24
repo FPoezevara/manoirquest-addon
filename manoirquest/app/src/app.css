@@ -201,3 +201,37 @@ body {
 .diff-1 { color: var(--green); }
 .diff-2 { color: var(--yellow); }
 .diff-3 { color: #ff453a; }
+
+/* ── Réglages / formulaires / ajout / Faites ─────────────────────────────── */
+.gear { margin-left: auto; font-size: 20px; text-decoration: none; opacity: 0.85; }
+.gear.active { opacity: 1; }
+
+.group-h { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-3); margin: 0 0 8px 2px; }
+
+.daychips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.daychip { font-size: 10px; font-weight: 600; color: var(--accent); background: rgba(255, 159, 9, 0.14); border-radius: 6px; padding: 1px 6px; }
+
+.add-form { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+.add-plus { font-size: 22px; color: var(--accent); line-height: 1; }
+
+.input, .select {
+	background: var(--surface-2); color: var(--text);
+	border: 0.5px solid var(--hairline); border-radius: var(--radius-xs);
+	padding: 9px 11px; font: inherit; font-size: 14px; min-width: 0;
+}
+.input:focus, .select:focus { outline: none; border-color: var(--accent); }
+.select { -webkit-appearance: none; appearance: none; }
+.input::placeholder { color: var(--text-3); }
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+.flabel { font-size: 11px; color: var(--text-3); }
+
+.day-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.day-check { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-2); background: var(--surface-2); border: 0.5px solid var(--hairline); border-radius: 8px; padding: 4px 8px; cursor: pointer; }
+.day-check input { accent-color: var(--accent); }
+.active-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-2); }
+.active-toggle input { accent-color: var(--green); }
+
+.done-row { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 0.5px solid var(--hairline); border-radius: var(--radius-sm); padding: 10px 12px; }
+.btn-undo { background: transparent; color: #ff8a80; border: 0.5px solid rgba(255, 69, 58, 0.5); border-radius: var(--radius-xs); padding: 6px 11px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+.btn-undo:hover { background: rgba(255, 69, 58, 0.12); }
