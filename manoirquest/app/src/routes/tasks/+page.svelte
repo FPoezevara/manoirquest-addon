@@ -3,131 +3,87 @@
 	export let data: PageData;
 	export let form: ActionData;
 
-	const diffLabel = (d: number) => ['', '★', '★★', '★★★'][d] ?? '?';
+	const diffLabel = (d: number) => ['', '★', '★★', '★★★'][d] ?? '';
 	const diffColor = (d: number) => ['', 'text-green-600', 'text-yellow-600', 'text-red-600'][d] ?? '';
 </script>
 
 <svelte:head><title>ManoirQuest — Tâches</title></svelte:head>
 
-<div class="p-4 space-y-5 max-w-lg mx-auto">
+<div class="p-4 space-y-4 max-w-lg mx-auto">
 
 	{#if form?.error}
 		<div class="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-2 text-sm">
 			{form.error}
 		</div>
+	{:else if form?.success}
+		<div class="bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-2 text-sm">
+			Tâche validée, points attribués ! 🎉
+		</div>
 	{/if}
 
-	<!-- À valider (parents) -->
-	{#if data.toValidate.length > 0}
-		<section>
-			<h2 class="font-bold text-orange-600 mb-2">⏳ À valider ({data.toValidate.length})</h2>
-			{#each data.toValidate as inst}
-				<div class="bg-orange-50 border border-orange-200 rounded-2xl p-4 mb-2">
-					<div class="flex items-start gap-3 mb-3">
-						<span class="text-3xl">{inst.task?.emoji}</span>
-						<div class="flex-1">
-							<p class="font-semibold">{inst.task?.name}</p>
-							<p class="text-sm text-gray-500">
-								par {inst.claimedByUser?.avatar} {inst.claimedByUser?.name}
-								· +{inst.task?.points} pts
-							</p>
-						</div>
-					</div>
-					<div class="flex gap-2">
-						<form method="POST" action="?/validate" class="flex-1">
-							<input type="hidden" name="instanceId" value={inst.id} />
-							<input type="hidden" name="approved" value="true" />
-							<button class="w-full bg-green-500 hover:bg-green-600 text-white rounded-xl py-2.5 font-semibold transition-colors">
-								✓ Valider
-							</button>
-						</form>
-						<form method="POST" action="?/refuse" class="flex-1">
-							<input type="hidden" name="instanceId" value={inst.id} />
-							<button class="w-full bg-gray-200 hover:bg-red-100 text-gray-700 hover:text-red-700 rounded-xl py-2.5 font-semibold transition-colors">
-								✗ Refuser
-							</button>
-						</form>
-					</div>
-				</div>
-			{/each}
-		</section>
-	{/if}
-
-	<!-- En cours (réclamées, pas encore déclarées) -->
-	{#if data.myClaimed.length > 0}
-		<section>
-			<h2 class="font-bold text-purple-700 mb-2">🔄 En cours ({data.myClaimed.length})</h2>
-			{#each data.myClaimed as inst}
-				<div class="bg-purple-50 border border-purple-200 rounded-2xl p-4 mb-2 flex items-center gap-3">
-					<span class="text-3xl">{inst.task?.emoji}</span>
-					<div class="flex-1">
-						<p class="font-semibold">{inst.task?.name}</p>
-						<p class="text-xs text-purple-500">Durée ~{inst.task?.durationMin} min · +{inst.task?.points} pts</p>
-					</div>
-					<form method="POST" action="?/declare">
-						<input type="hidden" name="instanceId" value={inst.id} />
-						<button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors">
-							Terminé !
-						</button>
-					</form>
-				</div>
-			{/each}
-		</section>
-	{/if}
-
-	<!-- En attente de validation -->
-	{#if data.myPending.length > 0}
-		<section>
-			<h2 class="font-bold text-yellow-600 mb-2">⏳ En attente de validation</h2>
-			{#each data.myPending as inst}
-				<div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-2 flex items-center gap-3 opacity-75">
-					<span class="text-3xl">{inst.task?.emoji}</span>
-					<div class="flex-1">
-						<p class="font-semibold">{inst.task?.name}</p>
-						<p class="text-xs text-yellow-600">En attente qu'un parent valide…</p>
-					</div>
-					<span class="text-yellow-500 text-xl">⏳</span>
-				</div>
-			{/each}
-		</section>
-	{/if}
-
-	<!-- Tâches disponibles -->
 	<section>
-		<h2 class="font-bold text-gray-700 mb-2">
-			📋 Disponibles
+		<h2 class="font-bold text-gray-700 mb-1">
+			📋 Tâches à faire
 			{#if data.available.length > 0}
 				<span class="text-sm font-normal text-gray-400">({data.available.length})</span>
 			{/if}
 		</h2>
+		<p class="text-xs text-gray-400 mb-3">Touche l'avatar de la personne qui a fait la tâche.</p>
 
 		{#if data.available.length === 0}
 			<div class="text-center py-10 text-gray-400">
 				<div class="text-5xl mb-2">🎉</div>
-				<p class="font-medium">Toutes les tâches sont prises !</p>
-				<p class="text-sm">Reviens plus tard.</p>
+				<p class="font-medium">Toutes les tâches de la semaine sont faites !</p>
 			</div>
 		{:else}
 			{#each data.available as inst}
-				<div class="bg-white border border-gray-100 rounded-2xl p-4 mb-2 shadow-sm flex items-center gap-3">
-					<span class="text-3xl">{inst.task?.emoji}</span>
-					<div class="flex-1">
-						<p class="font-semibold text-gray-800">{inst.task?.name}</p>
-						<p class="text-xs text-gray-500 mt-0.5">
-							<span class="{diffColor(inst.task?.difficulty ?? 1)}">{diffLabel(inst.task?.difficulty ?? 1)}</span>
-							· ~{inst.task?.durationMin} min
-							· <span class="text-purple-600 font-semibold">+{inst.task?.points} pts</span>
-						</p>
+				<div class="bg-white border border-gray-100 rounded-2xl p-4 mb-2 shadow-sm">
+					<div class="flex items-center gap-3 mb-3">
+						<span class="text-3xl">{inst.task.emoji}</span>
+						<div class="flex-1 min-w-0">
+							<p class="font-semibold text-gray-800">{inst.task.name}</p>
+							<p class="text-xs text-gray-500 mt-0.5">
+								<span class={diffColor(inst.task.difficulty)}>{diffLabel(inst.task.difficulty)}</span>
+								· ~{inst.task.durationMin} min
+								· <span class="text-purple-600 font-semibold">+{inst.task.points} pts</span>
+							</p>
+						</div>
 					</div>
-					<form method="POST" action="?/claim">
+					<form method="POST" action="?/complete" class="flex gap-2">
 						<input type="hidden" name="instanceId" value={inst.id} />
-						<button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors active:scale-95">
-							Je prends !
-						</button>
+						{#each data.players as p}
+							<button
+								name="userId"
+								value={p.id}
+								title="Fait par {p.name}"
+								class="flex-1 flex flex-col items-center gap-0.5 bg-gray-50 hover:bg-purple-50 border border-gray-200
+								       rounded-xl py-2 active:scale-95 transition-all"
+							>
+								<span class="text-2xl">{p.avatar}</span>
+								<span class="text-[11px] text-gray-600">{p.name}</span>
+							</button>
+						{/each}
 					</form>
 				</div>
 			{/each}
 		{/if}
 	</section>
+
+	{#if data.recentDone.length > 0}
+		<section>
+			<h2 class="font-bold text-gray-700 mb-2">✅ Dernières faites</h2>
+			<div class="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+				{#each data.recentDone as inst}
+					<div class="flex items-center gap-2 text-sm px-4 py-2 border-b border-gray-50 last:border-0">
+						<span>{inst.claimedByUser?.avatar ?? '🧑'}</span>
+						<span class="text-gray-600">{inst.claimedByUser?.name ?? '—'}</span>
+						<span>{inst.task.emoji}</span>
+						<span class="flex-1 text-gray-700 truncate">{inst.task.name}</span>
+						<span class="text-green-600 font-semibold text-xs">+{inst.pointsAwarded}</span>
+					</div>
+				{/each}
+			</div>
+		</section>
+	{/if}
 
 </div>

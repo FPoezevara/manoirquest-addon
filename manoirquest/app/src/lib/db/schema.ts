@@ -109,3 +109,34 @@ export interface Session {
 	expires_at: string;
 	created_at: string;
 }
+
+// ── DTO côté présentation (camelCase, imbriqués) ─────────────────────────────
+// Les loaders mappent les lignes SQL plates (snake_case) vers ces formes propres
+// consommées par les templates.
+
+export interface PlayerDTO {
+	id: number;
+	name: string;
+	avatar: string;
+	role: Role;
+	weeklyPoints: number;
+	totalPoints: number;
+	level: number;
+	badges?: { emoji: string; name: string }[];
+}
+
+export interface InstanceDTO {
+	id: number;
+	status: TaskStatus;
+	pointsAwarded: number | null;
+	validatedAt: string | null;
+	task: {
+		id: number;
+		name: string;
+		emoji: string;
+		points: number;
+		difficulty: number;
+		durationMin: number;
+	};
+	claimedByUser: { id: number; name: string; avatar: string } | null;
+}

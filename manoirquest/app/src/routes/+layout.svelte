@@ -6,7 +6,6 @@
 	// Préfixe d'ingress runtime (vide hors ingress)
 	$: base = data.base ?? '';
 	// Chemin courant débarrassé du préfixe, pour l'état actif de la nav.
-	// Côté SSR pathname est déjà nu ; côté client il porte le préfixe → on le retire.
 	$: current = $page.url.pathname.replace(base, '') || '/';
 
 	const navItems = [
@@ -15,27 +14,14 @@
 		{ href: '/leaderboard', icon: '🏆', label: 'Classement' },
 		{ href: '/profile',     icon: '👤', label: 'Profil'     },
 	];
-
-	async function logout() {
-		await fetch(`${base}/api/auth`, { method: 'POST' });
-		window.location.href = `${base}/login`;
-	}
 </script>
 
-{#if data.user}
 <div class="flex flex-col min-h-screen bg-gray-50">
 	<!-- Top bar -->
-	<header class="bg-purple-700 text-white px-4 py-3 flex items-center justify-between shadow-md sticky top-0 z-10">
-		<div class="flex items-center gap-2">
-			<span class="text-xl">🏠</span>
-			<span class="font-bold text-lg">ManoirQuest</span>
-		</div>
-		<div class="flex items-center gap-3">
-			<span class="text-sm bg-purple-600 px-2 py-1 rounded-full">
-				{data.user.avatar} {data.user.name}
-			</span>
-			<button on:click={logout} class="text-purple-200 text-xs hover:text-white">Quitter</button>
-		</div>
+	<header class="bg-purple-700 text-white px-4 py-3 flex items-center gap-2 shadow-md sticky top-0 z-10">
+		<span class="text-xl">🏠</span>
+		<span class="font-bold text-lg">ManoirQuest</span>
+		<span class="ml-auto text-xs text-purple-200">Tableau familial</span>
 	</header>
 
 	<!-- Content -->
@@ -50,7 +36,7 @@
 				{@const active = current === item.href}
 				<a
 					href={base + item.href}
-					class="flex-1 flex flex-col items-center py-2 text-xs gap-0.5 transition-colors
+					class="relative flex-1 flex flex-col items-center py-2 text-xs gap-0.5 transition-colors
 					       {active ? 'text-purple-700 font-semibold' : 'text-gray-500'}"
 				>
 					<span class="text-xl">{item.icon}</span>
@@ -63,9 +49,6 @@
 		</div>
 	</nav>
 </div>
-{:else}
-<slot />
-{/if}
 
 <style>
 	:global(body) { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
