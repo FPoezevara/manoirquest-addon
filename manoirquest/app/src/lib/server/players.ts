@@ -86,6 +86,40 @@ export function getAvailableRewards(): Reward[] {
 	return all<Reward>('SELECT * FROM rewards WHERE is_active = 1 ORDER BY cost ASC');
 }
 
+// ── CRUD récompenses (réglages) ───────────────────────────────────────────────
+export function listRewards(): Reward[] {
+	return all<Reward>('SELECT * FROM rewards ORDER BY cost ASC, name COLLATE NOCASE');
+}
+
+export interface RewardInput {
+	id?: number;
+	name: string; emoji: string; description: string; cost: number; active?: boolean;
+}
+
+export function createReward(input: RewardInput): void {
+	const name = input.name.trim();
+	if (!name) throw new Error('Le nom est obligatoire');
+	run(
+		'INSERT INTO rewards (name, emoji, description, cost, is_active) VALUES (?, ?, ?, ?, 1)',
+		name, input.emoji?.trim() || '🎁', (input.description ?? '').trim(), Math.max(0, Math.round(input.cost || 0))
+	);
+}
+
+export function updateReward(input: RewardInput & { id: number; active: boolean }): void {
+	const name = input.name.trim();
+	if (!name) throw new Error('Le nom est obligatoire');
+	run(
+		'UPDATE rewards SET name = ?, emoji = ?, description = ?, cost = ?, is_active = ? WHERE id = ?',
+		name, input.emoji?.trim() || '🎁', (input.description ?? '').trim(),
+		Math.max(0, Math.round(input.cost || 0)), input.active ? 1 : 0, input.id
+	);
+}
+
+export function deleteReward(rewardId: number): void {
+	run('DELETE FROM reward_claims WHERE reward_id = ?', rewardId);
+	run('DELETE FROM rewards WHERE id = ?', rewardId);
+}
+
 export function getUserClaims(userId: number) {
 	return all<{ id: number; status: string; claimed_at: string; reward_emoji: string; reward_name: string; reward_cost: number }>(`
 		SELECT rc.id, rc.status, rc.claimed_at,

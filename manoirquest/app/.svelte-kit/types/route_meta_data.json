@@ -7,6 +7,10 @@
 	"/api/auth": [
 		"src/routes/api/auth/+server.ts"
 	],
+	"/done": [
+		"src/routes/done/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
 	"/leaderboard": [
 		"src/routes/leaderboard/+page.server.ts",
 		"src/routes/+layout.server.ts"
@@ -17,6 +21,10 @@
 	],
 	"/profile": [
 		"src/routes/profile/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/settings": [
+		"src/routes/settings/+page.server.ts",
 		"src/routes/+layout.server.ts"
 	],
 	"/tasks": [

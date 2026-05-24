@@ -227,4 +227,12 @@ if (!taskCols.includes('sched_kind')) {
   console.log('  ✓ Migration sched_kind/sched_days appliquée');
 }
 
+// ── Migration : jour habituel des tâches récurrentes (anchor_day) ─────────────
+// 1..7 (lun..dim) pour weekly/biweekly/monthly ; NULL = pas de jour imposé.
+// Additif et idempotent. Pas de backfill : à régler par l'app au cas par cas.
+if (!taskCols.includes('anchor_day')) {
+  db.exec('ALTER TABLE tasks ADD COLUMN anchor_day INTEGER');
+  console.log('  ✓ Migration anchor_day appliquée');
+}
+
 console.log('Schéma à jour ✅');

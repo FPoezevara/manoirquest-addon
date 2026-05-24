@@ -1,5 +1,5 @@
 import "./environment.js";
-import { C as get_next_sibling, D as boundary, E as set, F as hydrating, I as set_hydrate_node, J as LEGACY_PROPS, K as async_mode_flag, L as set_hydrating, M as pop, N as push, O as flushSync, P as hydrate_node, R as hydration_mismatch, S as get_first_child, T as mutable_source, V as hydration_failed, W as HYDRATION_ERROR, X as array_from, Z as define_property, _ as set_active_effect, a as derived, b as clear_text_content, c as render, g as get, h as active_reaction, it as setContext, j as component_context, m as active_effect, p as is_passive_event, v as set_active_reaction, w as init_operations, x as create_text, y as component_root } from "./dev.js";
+import { C as get_next_sibling, D as boundary, E as set, F as hydrating, G as HYDRATION_ERROR, I as set_hydrate_node, L as set_hydrating, M as pop, N as push, O as flushSync, P as hydrate_node, Q as define_property, R as hydration_mismatch, S as get_first_child, T as mutable_source, V as hydration_failed, Y as LEGACY_PROPS, Z as array_from, _ as set_active_effect, a as derived, at as setContext, b as clear_text_content, c as render, g as get, h as active_reaction, j as component_context, m as active_effect, p as is_passive_event, q as async_mode_flag, v as set_active_reaction, w as init_operations, x as create_text, y as component_root } from "./dev.js";
 //#region \0virtual:__sveltekit/server
 var read_implementation = null;
 function set_read_implementation(fn) {
@@ -548,7 +548,7 @@ var options = {
 			"block-all-mixed-content": false
 		}
 	},
-	csrf_check_origin: true,
+	csrf_check_origin: false,
 	csrf_trusted_origins: [],
 	embedded: false,
 	env_public_prefix: "PUBLIC_",
@@ -561,10 +561,10 @@ var options = {
 	service_worker_options: void 0,
 	server_error_boundaries: false,
 	templates: {
-		app: ({ head, body, assets, nonce, env }) => "<!doctype html>\n<html lang=\"fr\">\n	<head>\n		<meta charset=\"utf-8\" />\n		<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\" />\n		<meta name=\"theme-color\" content=\"#6B46C1\" />\n		<meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />\n		<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\" />\n		<meta name=\"apple-mobile-web-app-title\" content=\"ManoirQuest\" />\n		<link rel=\"manifest\" href=\"" + assets + "/manifest.json\" />\n		<link rel=\"apple-touch-icon\" href=\"" + assets + "/icons/icon-192.png\" />\n		<link rel=\"icon\" href=\"" + assets + "/icons/favicon.png\" />\n		" + head + "\n	</head>\n	<body data-sveltekit-reload class=\"bg-gray-50\">\n		<div id=\"svelte\">" + body + "</div>\n		<script>\n			if ('serviceWorker' in navigator) {\n				window.addEventListener('load', () => {\n					navigator.serviceWorker.register('" + assets + "/sw.js');\n				});\n			}\n		<\/script>\n	</body>\n</html>\n",
+		app: ({ head, body, assets, nonce, env }) => "<!doctype html>\n<html lang=\"fr\">\n	<head>\n		<meta charset=\"utf-8\" />\n		<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\" />\n		<meta name=\"theme-color\" content=\"#1c1c1e\" />\n		<meta name=\"apple-mobile-web-app-capable\" content=\"yes\" />\n		<meta name=\"apple-mobile-web-app-status-bar-style\" content=\"black-translucent\" />\n		<meta name=\"apple-mobile-web-app-title\" content=\"ManoirQuest\" />\n		<link rel=\"manifest\" href=\"" + assets + "/manifest.json\" />\n		<link rel=\"apple-touch-icon\" href=\"" + assets + "/icons/icon-192.png\" />\n		<link rel=\"icon\" href=\"" + assets + "/icons/favicon.png\" />\n		" + head + "\n	</head>\n	<body data-sveltekit-reload class=\"bg-gray-50\">\n		<div id=\"svelte\">" + body + "</div>\n		<script>\n			if ('serviceWorker' in navigator) {\n				window.addEventListener('load', () => {\n					navigator.serviceWorker.register('" + assets + "/sw.js');\n				});\n			}\n		<\/script>\n	</body>\n</html>\n",
 		error: ({ status, message }) => "<!doctype html>\n<html lang=\"en\">\n	<head>\n		<meta charset=\"utf-8\" />\n		<title>" + message + "</title>\n\n		<style>\n			body {\n				--bg: white;\n				--fg: #222;\n				--divider: #ccc;\n				background: var(--bg);\n				color: var(--fg);\n				font-family:\n					system-ui,\n					-apple-system,\n					BlinkMacSystemFont,\n					'Segoe UI',\n					Roboto,\n					Oxygen,\n					Ubuntu,\n					Cantarell,\n					'Open Sans',\n					'Helvetica Neue',\n					sans-serif;\n				display: flex;\n				align-items: center;\n				justify-content: center;\n				height: 100vh;\n				margin: 0;\n			}\n\n			.error {\n				display: flex;\n				align-items: center;\n				max-width: 32rem;\n				margin: 0 1rem;\n			}\n\n			.status {\n				font-weight: 200;\n				font-size: 3rem;\n				line-height: 1;\n				position: relative;\n				top: -0.05rem;\n			}\n\n			.message {\n				border-left: 1px solid var(--divider);\n				padding: 0 0 0 1rem;\n				margin: 0 0 0 1rem;\n				min-height: 2.5rem;\n				display: flex;\n				align-items: center;\n			}\n\n			.message h1 {\n				font-weight: 400;\n				font-size: 1em;\n				margin: 0;\n			}\n\n			@media (prefers-color-scheme: dark) {\n				body {\n					--bg: #222;\n					--fg: #ddd;\n					--divider: #666;\n				}\n			}\n		</style>\n	</head>\n	<body>\n		<div class=\"error\">\n			<span class=\"status\">" + status + "</span>\n			<div class=\"message\">\n				<h1>" + message + "</h1>\n			</div>\n		</div>\n	</body>\n</html>\n"
 	},
-	version_hash: "1rkb3p8"
+	version_hash: "ccotdm"
 };
 async function get_hooks() {
 	let handle;

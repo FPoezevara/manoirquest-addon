@@ -1,10 +1,10 @@
 import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
-import { getAvailableGroups, completeTask, addInstance, listCatalogue } from '$lib/server/tasks';
+import { getDueGroups, completeTask, addInstance, setInstanceDate, listCatalogue } from '$lib/server/tasks';
 
 export const load: PageServerLoad = async () => {
 	return {
-		groups: getAvailableGroups(),
+		groups: getDueGroups(),
 		catalogue: listCatalogue(true) // tâches actives, pour l'ajout manuel
 	};
 };
@@ -35,5 +35,19 @@ export const actions: Actions = {
 			return fail(400, { error: (e as Error).message });
 		}
 		return { added: true };
+	},
+
+	// Attribution / changement de la date d'échéance d'une occurrence.
+	setDate: async ({ request }) => {
+		const data = await request.formData();
+		const instanceId = Number(data.get('instanceId'));
+		const date = String(data.get('date') ?? '');
+		if (!instanceId || !date) return fail(400, { error: 'Date invalide' });
+		try {
+			setInstanceDate(instanceId, date);
+		} catch (e: unknown) {
+			return fail(400, { error: (e as Error).message });
+		}
+		return { dated: true };
 	}
 };

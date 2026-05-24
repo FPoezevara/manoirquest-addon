@@ -1,5 +1,5 @@
-// ManoirQuest Service Worker — v0.1
-const CACHE = 'manoirquest-v1';
+// ManoirQuest Service Worker — v0.2
+const CACHE = 'manoirquest-v2';
 
 // Assets à mettre en cache offline
 const PRECACHE = [
@@ -28,7 +28,8 @@ self.addEventListener('fetch', (e) => {
 
   // Stratégie : network-first pour les pages, cache-first pour les assets statiques
   const url = new URL(e.request.url);
-  const isStatic = url.pathname.startsWith('/_app/') || url.pathname.startsWith('/icons/');
+  const isStatic = url.pathname.startsWith('/_app/') || url.pathname.startsWith('/icons/')
+    || url.pathname.endsWith('/background.jpg');
 
   if (isStatic) {
     e.respondWith(

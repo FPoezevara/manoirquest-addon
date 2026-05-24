@@ -7,5 +7,8 @@ export function getWeekStart(date = new Date()): string {
 	const day = d.getDay(); // 0 = dimanche
 	const diff = day === 0 ? -6 : 1 - day; // recule au lundi
 	d.setDate(d.getDate() + diff);
-	return d.toISOString().slice(0, 10);
+	// Format local (pas toISOString/UTC) pour éviter tout décalage d'un jour
+	// en fuseau positif (UTC+1/+2) — cohérent avec les dates locales de tasks.ts.
+	const pad = (n: number) => String(n).padStart(2, '0');
+	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }

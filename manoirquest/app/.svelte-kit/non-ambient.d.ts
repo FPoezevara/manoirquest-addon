@@ -29,7 +29,7 @@ declare module "$app/types" {
 	type MatcherParam<M> = M extends (param : string) => param is (infer U extends string) ? U : string;
 
 	export interface AppTypes {
-		RouteId(): "/" | "/api" | "/api/auth" | "/api/tasks" | "/api/tasks/claim" | "/api/tasks/declare" | "/api/tasks/validate" | "/leaderboard" | "/login" | "/profile" | "/tasks";
+		RouteId(): "/" | "/api" | "/api/auth" | "/api/tasks" | "/api/tasks/claim" | "/api/tasks/declare" | "/api/tasks/validate" | "/done" | "/leaderboard" | "/login" | "/profile" | "/settings" | "/tasks";
 		RouteParams(): {
 			
 		};
@@ -41,12 +41,14 @@ declare module "$app/types" {
 			"/api/tasks/claim": Record<string, never>;
 			"/api/tasks/declare": Record<string, never>;
 			"/api/tasks/validate": Record<string, never>;
+			"/done": Record<string, never>;
 			"/leaderboard": Record<string, never>;
 			"/login": Record<string, never>;
 			"/profile": Record<string, never>;
+			"/settings": Record<string, never>;
 			"/tasks": Record<string, never>
 		};
-		Pathname(): "/" | "/api/auth" | "/leaderboard" | "/login" | "/profile" | "/tasks";
+		Pathname(): "/" | "/api/auth" | "/done" | "/leaderboard" | "/login" | "/profile" | "/settings" | "/tasks";
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
 		Asset(): "/icons/favicon.png" | "/icons/icon-192.png" | "/icons/icon-512.png" | "/manifest.json" | "/sw.js" | string & {};
 	}

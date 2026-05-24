@@ -10,15 +10,17 @@ return {
 	assets: new Set(["icons/favicon.png","icons/icon-192.png","icons/icon-512.png","manifest.json","sw.js"]),
 	mimeTypes: {".png":"image/png",".json":"application/json",".js":"text/javascript"},
 	_: {
-		client: {start:"_app/immutable/entry/start.DZ9bnP7u.js",app:"_app/immutable/entry/app.BWgtTTYX.js",imports:["_app/immutable/entry/start.DZ9bnP7u.js","_app/immutable/chunks/BLUzwq2q.js","_app/immutable/chunks/DUZ7yc7H.js","_app/immutable/entry/app.BWgtTTYX.js","_app/immutable/chunks/DUZ7yc7H.js","_app/immutable/chunks/kNaey6uv.js","_app/immutable/chunks/xihTtKlq.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
+		client: {start:"_app/immutable/entry/start.CuqvuZu5.js",app:"_app/immutable/entry/app.DjTWMUct.js",imports:["_app/immutable/entry/start.CuqvuZu5.js","_app/immutable/chunks/6m1V4_Nh.js","_app/immutable/chunks/lwzunFI7.js","_app/immutable/entry/app.DjTWMUct.js","_app/immutable/chunks/lwzunFI7.js","_app/immutable/chunks/kNaey6uv.js","_app/immutable/chunks/xihTtKlq.js"],stylesheets:[],fonts:[],uses_env_dynamic_public:false},
 		nodes: [
-			__memo(() => import('./chunks/0-CP0md-Ny.js')),
-			__memo(() => import('./chunks/1-uqF8DlNB.js')),
-			__memo(() => import('./chunks/2-DAND_RvW.js')),
-			__memo(() => import('./chunks/3-BqO4Tu8J.js')),
-			__memo(() => import('./chunks/4-Y1rWWYZG.js')),
-			__memo(() => import('./chunks/5-DGI2Hu5p.js')),
-			__memo(() => import('./chunks/6-v6HSY_VV.js'))
+			__memo(() => import('./chunks/0-BB4Bk8SV.js')),
+			__memo(() => import('./chunks/1-IDUOjhZa.js')),
+			__memo(() => import('./chunks/2-BMetpqfA.js')),
+			__memo(() => import('./chunks/3-DQSRfd2D.js')),
+			__memo(() => import('./chunks/4-ktcy4AX2.js')),
+			__memo(() => import('./chunks/5-ZObajJh1.js')),
+			__memo(() => import('./chunks/6-CPaXMwWi.js')),
+			__memo(() => import('./chunks/7-BN5xhPoa.js')),
+			__memo(() => import('./chunks/8-C7KG1Kns.js'))
 		],
 		remotes: {
 			
@@ -36,34 +38,48 @@ return {
 				pattern: /^\/api\/auth\/?$/,
 				params: [],
 				page: null,
-				endpoint: __memo(() => import('./chunks/_server.ts-DMj39SOo.js'))
+				endpoint: __memo(() => import('./chunks/_server.ts-_FLWoB2g.js'))
+			},
+			{
+				id: "/done",
+				pattern: /^\/done\/?$/,
+				params: [],
+				page: { layouts: [0,], errors: [1,], leaf: 3 },
+				endpoint: null
 			},
 			{
 				id: "/leaderboard",
 				pattern: /^\/leaderboard\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 3 },
+				page: { layouts: [0,], errors: [1,], leaf: 4 },
 				endpoint: null
 			},
 			{
 				id: "/login",
 				pattern: /^\/login\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 4 },
+				page: { layouts: [0,], errors: [1,], leaf: 5 },
 				endpoint: null
 			},
 			{
 				id: "/profile",
 				pattern: /^\/profile\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 5 },
+				page: { layouts: [0,], errors: [1,], leaf: 6 },
+				endpoint: null
+			},
+			{
+				id: "/settings",
+				pattern: /^\/settings\/?$/,
+				params: [],
+				page: { layouts: [0,], errors: [1,], leaf: 7 },
 				endpoint: null
 			},
 			{
 				id: "/tasks",
 				pattern: /^\/tasks\/?$/,
 				params: [],
-				page: { layouts: [0,], errors: [1,], leaf: 6 },
+				page: { layouts: [0,], errors: [1,], leaf: 8 },
 				endpoint: null
 			}
 		],

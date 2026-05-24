@@ -1,61 +1,55 @@
 // @ts-nocheck
 import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
-import { all, run } from '$lib/db';
-import { getTasksForUser, claimTask, declareTask, validateTask } from '$lib/server/tasks';
-import { getWeekStart } from '$lib/server/auth';
-import type { TaskInstance } from '$lib/db/schema';
+import { getDueGroups, completeTask, addInstance, setInstanceDate, listCatalogue } from '$lib/server/tasks';
 
-export const load = async ({ locals }: Parameters<PageServerLoad>[0]) => {
-	const userId = locals.user!.id;
-	const instances = getTasksForUser(userId);
-
-	const available  = instances.filter(i => i.status === 'pending' && (i.assigned_to === null || i.assigned_to === userId));
-	const myClaimed  = instances.filter(i => i.claimed_by === userId && i.status === 'claimed');
-	const myPending  = instances.filter(i => i.claimed_by === userId && i.status === 'awaiting_validation');
-	const toValidate = locals.user!.role === 'parent'
-		? instances.filter(i => i.status === 'awaiting_validation')
-		: [];
-
-	return { available, myClaimed, myPending, toValidate };
+export const load = async () => {
+	return {
+		groups: getDueGroups(),
+		catalogue: listCatalogue(true) // tâches actives, pour l'ajout manuel
+	};
 };
 
 export const actions = {
-	claim: async ({ request, locals }: import('./$types').RequestEvent) => {
+	// Un geste : on choisit qui a fait la tâche → points immédiats.
+	complete: async ({ request }: import('./$types').RequestEvent) => {
 		const data = await request.formData();
-		try { claimTask(Number(data.get('instanceId')), locals.user!.id); }
-		catch (e: unknown) { return fail(400, { error: (e as Error).message }); }
+		const instanceId = Number(data.get('instanceId'));
+		const userId = Number(data.get('userId'));
+		if (!instanceId || !userId) return fail(400, { error: 'Choisis qui a fait la tâche' });
+		try {
+			completeTask(instanceId, userId);
+		} catch (e: unknown) {
+			return fail(400, { error: (e as Error).message });
+		}
+		return { success: true };
 	},
 
-	declare: async ({ request, locals }: import('./$types').RequestEvent) => {
+	// Ajout manuel d'une occurrence d'une tâche du catalogue.
+	add: async ({ request }: import('./$types').RequestEvent) => {
 		const data = await request.formData();
-		try { declareTask(Number(data.get('instanceId')), locals.user!.id, locals.user!.role); }
-		catch (e: unknown) { return fail(400, { error: (e as Error).message }); }
+		const taskId = Number(data.get('taskId'));
+		if (!taskId) return fail(400, { error: 'Choisis une tâche à ajouter' });
+		try {
+			addInstance(taskId);
+		} catch (e: unknown) {
+			return fail(400, { error: (e as Error).message });
+		}
+		return { added: true };
 	},
 
-	validate: async ({ request, locals }: import('./$types').RequestEvent) => {
-		if (locals.user!.role !== 'parent') return fail(403, { error: 'Réservé aux parents' });
+	// Attribution / changement de la date d'échéance d'une occurrence.
+	setDate: async ({ request }: import('./$types').RequestEvent) => {
 		const data = await request.formData();
-		try { validateTask(Number(data.get('instanceId')), locals.user!.id, data.get('approved') === 'true'); }
-		catch (e: unknown) { return fail(400, { error: (e as Error).message }); }
-	},
-
-	refuse: async ({ request, locals }: import('./$types').RequestEvent) => {
-		if (locals.user!.role !== 'parent') return fail(403, { error: 'Réservé aux parents' });
-		const data = await request.formData();
-		try { validateTask(Number(data.get('instanceId')), locals.user!.id, false, 'Refusé'); }
-		catch (e: unknown) { return fail(400, { error: (e as Error).message }); }
-	},
-
-	addManual: async ({ request, locals }: import('./$types').RequestEvent) => {
-		if (locals.user!.role !== 'parent') return fail(403, { error: 'Réservé aux parents' });
-		const data = await request.formData();
-		const taskId   = Number(data.get('taskId'));
-		const assignTo = data.get('assignTo') ? Number(data.get('assignTo')) : null;
-		run(
-			'INSERT INTO task_instances (task_id, assigned_to, due_date, week_start, status) VALUES (?, ?, date("now"), ?, "pending")',
-			taskId, assignTo, getWeekStart()
-		);
+		const instanceId = Number(data.get('instanceId'));
+		const date = String(data.get('date') ?? '');
+		if (!instanceId || !date) return fail(400, { error: 'Date invalide' });
+		try {
+			setInstanceDate(instanceId, date);
+		} catch (e: unknown) {
+			return fail(400, { error: (e as Error).message });
+		}
+		return { dated: true };
 	}
 };
-;null as any as Actions;
+;null as any as PageServerLoad;;null as any as Actions;

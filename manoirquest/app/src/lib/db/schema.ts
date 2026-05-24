@@ -32,6 +32,7 @@ export interface Task {
 	recurrence: Recurrence;   // legacy — conservé, plus utilisé pour la génération
 	sched_kind: ScheduleKind;
 	sched_days: string;        // CSV des jours 1=lun … 7=dim (si sched_kind='weekdays')
+	anchor_day: number | null; // jour habituel 1=lun … 7=dim (weekly/biweekly/monthly), NULL = aucun
 	is_active: number;  // SQLite stores booleans as 0/1
 	created_at: string;
 }
@@ -133,6 +134,7 @@ export interface InstanceDTO {
 	status: TaskStatus;
 	pointsAwarded: number | null;
 	validatedAt: string | null;
+	dueDate: string;          // YYYY-MM-DD — échéance de l'occurrence
 	task: {
 		id: number;
 		name: string;
@@ -142,6 +144,7 @@ export interface InstanceDTO {
 		durationMin: number;
 		scheduleKind: ScheduleKind;
 		scheduleDays: number[];
+		anchorDay: number | null;
 	};
 	claimedByUser: { id: number; name: string; avatar: string } | null;
 }

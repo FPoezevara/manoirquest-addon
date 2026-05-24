@@ -11,10 +11,7 @@
   },
   "_auth.js": {
     "file": "chunks/auth.js",
-    "name": "auth",
-    "imports": [
-      "_db.js"
-    ]
+    "name": "auth"
   },
   "_client.js": {
     "file": "chunks/client.js",
@@ -26,10 +23,6 @@
       "_shared.js",
       "_dev.js"
     ]
-  },
-  "_db.js": {
-    "file": "chunks/db.js",
-    "name": "db"
   },
   "_dev.js": {
     "file": "chunks/dev.js",
@@ -60,6 +53,13 @@
       "src/hooks.server.ts"
     ]
   },
+  "_players.js": {
+    "file": "chunks/players.js",
+    "name": "players",
+    "imports": [
+      "_auth.js"
+    ]
+  },
   "_shared.js": {
     "file": "chunks/shared.js",
     "name": "shared",
@@ -71,7 +71,6 @@
     "file": "chunks/tasks.js",
     "name": "tasks",
     "imports": [
-      "_db.js",
       "_auth.js"
     ]
   },
@@ -122,16 +121,16 @@
     "file": "entries/hooks.server.js",
     "name": "entries/hooks.server",
     "src": "src/hooks.server.ts",
-    "isEntry": true,
-    "imports": [
-      "_auth.js"
-    ]
+    "isEntry": true
   },
   "src/routes/+layout.server.ts": {
     "file": "entries/pages/_layout.server.ts.js",
     "name": "entries/pages/_layout.server.ts",
     "src": "src/routes/+layout.server.ts",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_players.js"
+    ]
   },
   "src/routes/+layout.svelte": {
     "file": "entries/pages/_layout.svelte.js",
@@ -144,7 +143,7 @@
       "_dev.js"
     ],
     "css": [
-      "_app/immutable/assets/_layout.CciMvYd0.css"
+      "_app/immutable/assets/_layout.3aLREbmW.css"
     ]
   },
   "src/routes/+page.server.ts": {
@@ -153,8 +152,7 @@
     "src": "src/routes/+page.server.ts",
     "isEntry": true,
     "imports": [
-      "_db.js",
-      "_auth.js",
+      "_players.js",
       "_tasks.js"
     ]
   },
@@ -171,9 +169,24 @@
     "file": "entries/endpoints/api/auth/_server.ts.js",
     "name": "entries/endpoints/api/auth/_server.ts",
     "src": "src/routes/api/auth/+server.ts",
+    "isEntry": true
+  },
+  "src/routes/done/+page.server.ts": {
+    "file": "entries/pages/done/_page.server.ts.js",
+    "name": "entries/pages/done/_page.server.ts",
+    "src": "src/routes/done/+page.server.ts",
     "isEntry": true,
     "imports": [
-      "_auth.js"
+      "_tasks.js"
+    ]
+  },
+  "src/routes/done/+page.svelte": {
+    "file": "entries/pages/done/_page.svelte.js",
+    "name": "entries/pages/done/_page.svelte",
+    "src": "src/routes/done/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_dev.js"
     ]
   },
   "src/routes/leaderboard/+page.server.ts": {
@@ -182,7 +195,7 @@
     "src": "src/routes/leaderboard/+page.server.ts",
     "isEntry": true,
     "imports": [
-      "_db.js"
+      "_players.js"
     ]
   },
   "src/routes/leaderboard/+page.svelte": {
@@ -198,11 +211,7 @@
     "file": "entries/pages/login/_page.server.ts.js",
     "name": "entries/pages/login/_page.server.ts",
     "src": "src/routes/login/+page.server.ts",
-    "isEntry": true,
-    "imports": [
-      "_db.js",
-      "_auth.js"
-    ]
+    "isEntry": true
   },
   "src/routes/login/+page.svelte": {
     "file": "entries/pages/login/_page.svelte.js",
@@ -219,7 +228,7 @@
     "src": "src/routes/profile/+page.server.ts",
     "isEntry": true,
     "imports": [
-      "_db.js"
+      "_players.js"
     ]
   },
   "src/routes/profile/+page.svelte": {
@@ -231,14 +240,31 @@
       "_dev.js"
     ]
   },
+  "src/routes/settings/+page.server.ts": {
+    "file": "entries/pages/settings/_page.server.ts.js",
+    "name": "entries/pages/settings/_page.server.ts",
+    "src": "src/routes/settings/+page.server.ts",
+    "isEntry": true,
+    "imports": [
+      "_players.js",
+      "_tasks.js"
+    ]
+  },
+  "src/routes/settings/+page.svelte": {
+    "file": "entries/pages/settings/_page.svelte.js",
+    "name": "entries/pages/settings/_page.svelte",
+    "src": "src/routes/settings/+page.svelte",
+    "isEntry": true,
+    "imports": [
+      "_dev.js"
+    ]
+  },
   "src/routes/tasks/+page.server.ts": {
     "file": "entries/pages/tasks/_page.server.ts.js",
     "name": "entries/pages/tasks/_page.server.ts",
     "src": "src/routes/tasks/+page.server.ts",
     "isEntry": true,
     "imports": [
-      "_db.js",
-      "_auth.js",
       "_tasks.js"
     ]
   },

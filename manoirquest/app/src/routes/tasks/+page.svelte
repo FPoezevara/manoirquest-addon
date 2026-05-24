@@ -4,8 +4,35 @@
 	export let form: ActionData;
 
 	const DAY = ['', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'];
+	const DAY_LONG = ['', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
 	const diffLabel = (d: number) => ['', '★', '★★', '★★★'][d] ?? '';
 	const diffClass = (d: number) => `diff-${d}`;
+
+	const KIND_LABEL: Record<string, string> = {
+		weekdays: 'Jours fixes', weekly: '1×/sem', biweekly: '2 sem.', monthly: '1×/mois', manual: 'Ponctuel'
+	};
+
+	const today = new Date(); today.setHours(0, 0, 0, 0);
+	const fmt = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+
+	function parseYmd(s: string): Date {
+		const [y, m, d] = s.split('-').map(Number);
+		return new Date(y, m - 1, d);
+	}
+	// Libellé humain de l'échéance + indicateur de retard.
+	function dueLabel(s: string): { text: string; late: boolean } {
+		const d = parseYmd(s); d.setHours(0, 0, 0, 0);
+		const diff = Math.round((d.getTime() - today.getTime()) / 86_400_000);
+		if (diff < 0) return { text: `En retard (${fmt.format(d)})`, late: true };
+		if (diff === 0) return { text: "Aujourd'hui", late: false };
+		if (diff === 1) return { text: 'Demain', late: false };
+		return { text: fmt.format(d), late: false };
+	}
+
+	// Auto-soumission du changement de date.
+	function submitDate(e: Event) {
+		(e.currentTarget as HTMLInputElement).form?.requestSubmit();
+	}
 </script>
 
 <svelte:head><title>ManoirQuest — Tâches</title></svelte:head>
@@ -18,6 +45,8 @@
 		<div class="banner banner-ok">Tâche validée, points attribués ! 🎉</div>
 	{:else if form?.added}
 		<div class="banner banner-ok">Tâche ajoutée à faire.</div>
+	{:else if form?.dated}
+		<div class="banner banner-ok">Date mise à jour. 📅</div>
 	{/if}
 
 	<!-- Ajout manuel d'une occurrence -->
@@ -40,10 +69,14 @@
 	{/if}
 
 	{#each data.groups as group}
-		<section>
-			<div class="group-h">{group.label} <span class="dim">· {group.items.length}</span></div>
+		<section class="bucket bucket-{group.key}">
+			<header class="bucket-h">
+				<span class="bucket-title">{group.label}</span>
+				<span class="bucket-count">{group.items.length}</span>
+			</header>
 			<div class="stack" style="gap:10px">
 				{#each group.items as inst}
+					{@const due = dueLabel(inst.dueDate)}
 					<div class="task-card">
 						<div class="row" style="margin-bottom:10px">
 							<span class="task-emoji">{inst.task.emoji}</span>
@@ -54,13 +87,29 @@
 									· ~{inst.task.durationMin} min
 									· <span class="pts">+{inst.task.points} pts</span>
 								</p>
-								{#if group.key === 'weekdays'}
-									<div class="daychips">
+								<div class="meta-chips">
+									<span class="due-chip" class:late={due.late}>📅 {due.text}</span>
+									{#if inst.task.scheduleKind === 'weekdays' && inst.task.scheduleDays.length < 7}
 										{#each inst.task.scheduleDays as d}<span class="daychip">{DAY[d]}</span>{/each}
-									</div>
-								{/if}
+									{:else if inst.task.anchorDay}
+										<span class="daychip">{KIND_LABEL[inst.task.scheduleKind]} · {DAY_LONG[inst.task.anchorDay]}</span>
+									{:else}
+										<span class="kindchip">{KIND_LABEL[inst.task.scheduleKind]}</span>
+									{/if}
+								</div>
 							</div>
 						</div>
+
+						<!-- Attribution / changement de date de l'occurrence -->
+						<form method="POST" action="?/setDate" class="date-form">
+							<input type="hidden" name="instanceId" value={inst.id} />
+							<label class="date-label" for="due-{inst.id}">Planifier&nbsp;:</label>
+							<input id="due-{inst.id}" class="input date-input" type="date" name="date"
+								value={inst.dueDate} on:change={submitDate} />
+							<button class="btn-mini" title="Enregistrer la date">OK</button>
+						</form>
+
+						<!-- Qui a fait la tâche -->
 						<form method="POST" action="?/complete" class="picker">
 							<input type="hidden" name="instanceId" value={inst.id} />
 							{#each data.players as p}

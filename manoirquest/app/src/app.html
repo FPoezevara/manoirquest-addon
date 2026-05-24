@@ -10,6 +10,10 @@
 		<link rel="manifest" href="%sveltekit.assets%/manifest.json" />
 		<link rel="apple-touch-icon" href="%sveltekit.assets%/icons/icon-192.png" />
 		<link rel="icon" href="%sveltekit.assets%/icons/favicon.png" />
+		<!-- Fond d'écran auto-hébergé (static/background.jpg). On passe par
+		     %sveltekit.assets% — le même mécanisme que les icônes — pour rester
+		     correct sous l'ingress HAOS. Exposé en variable CSS pour app.css. -->
+		<style>:root{--app-bg:url('%sveltekit.assets%/background.jpg')}</style>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-reload class="bg-gray-50">

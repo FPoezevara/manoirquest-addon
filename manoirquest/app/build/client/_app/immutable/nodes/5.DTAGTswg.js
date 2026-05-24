@@ -1,0 +1,1 @@
+import{S as e,w as t}from"../chunks/lwzunFI7.js";import"../chunks/xihTtKlq.js";import"../chunks/1sAtSMT6.js";var n=t(`<p class="p-6 text-center text-gray-400">Redirection…</p>`);function r(t){e(t,n())}export{r as component};

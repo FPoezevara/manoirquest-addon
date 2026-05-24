@@ -7,17 +7,21 @@ export const nodes = [
 	() => import('./nodes/3'),
 	() => import('./nodes/4'),
 	() => import('./nodes/5'),
-	() => import('./nodes/6')
+	() => import('./nodes/6'),
+	() => import('./nodes/7'),
+	() => import('./nodes/8')
 ];
 
 export const server_loads = [0];
 
 export const dictionary = {
 		"/": [~2],
-		"/leaderboard": [~3],
-		"/login": [~4],
-		"/profile": [~5],
-		"/tasks": [~6]
+		"/done": [~3],
+		"/leaderboard": [~4],
+		"/login": [~5],
+		"/profile": [~6],
+		"/settings": [~7],
+		"/tasks": [~8]
 	};
 
 export const hooks = {
