@@ -39,14 +39,11 @@ body {
 /* ── Fond d'écran plein écran, fixe au scroll ──────────────────────────────
    Calque position:fixed (et non background-attachment:fixed, bogué sur iOS).
    Couvre 100% largeur/hauteur du viewport et reste immobile au défilement.
-   L'image est auto-hébergée : --app-bg est défini dans app.html via
-   %sveltekit.assets%/background.jpg (compatible ingress HAOS). */
-body::before {
-	content: '';
+   L'URL de l'image est posée dans +layout.svelte via `base` (préfixe ingress). */
+.app-bg {
 	position: fixed;
 	inset: 0;
 	z-index: -1;
-	background-image: var(--app-bg);
 	background-position: center center;
 	background-size: cover;
 	background-repeat: no-repeat;

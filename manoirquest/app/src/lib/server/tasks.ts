@@ -129,20 +129,95 @@ function insertInstance(taskId: number, due: string): void {
 	);
 }
 
-export function generateDueInstances(): void {
-	const tasks = all<SchedRow>(
-		'SELECT id, sched_kind, sched_days, anchor_day FROM tasks WHERE is_active = 1'
+// Échéance de l'occurrence « courante » d'une tâche récurrente : la dernière
+// occurrence planifiée <= aujourd'hui (visible, éventuellement en retard) ; si
+// aucune n'est encore arrivée, la prochaine à venir. Sert à (re)générer
+// l'occurrence du jour quand son échéance arrive, même si l'ancienne n'a pas
+// été faite — la déduplication supprime ensuite le retard superflu.
+//  - lastDone : due_date de la dernière occurrence FAITE (ancre la cadence)
+//  - earliest : due_date la plus ancienne en attente (ancre de bootstrap si jamais faite,
+//               préserve une date posée manuellement)
+export function scheduledCurrentDue(
+	t: SchedRow, lastDone: string | null, earliest: string | null, today: string
+): string | null {
+	if (t.sched_kind === 'manual') return null;
+
+	if (t.sched_kind === 'weekdays') {
+		const days = parseDays(t.sched_days);
+		if (!days.length) return null;
+		// dernier jour planifié <= aujourd'hui (et pas déjà fait)
+		let d = today;
+		for (let i = 0; i < 7; i++) {
+			if (days.includes(isoWeekdayOf(d))) {
+				if (lastDone == null || d > lastDone) return d;
+				break; // ce jour-là est déjà fait → on prend la prochaine échéance
+			}
+			d = addDaysStr(d, -1);
+		}
+		const start = lastDone ? maxStr(addDaysStr(lastDone, 1), today) : today;
+		return nextWeekdaysOccurrence(days, start);
+	}
+
+	// weekly / biweekly / monthly
+	const step = (s: string) =>
+		t.sched_kind === 'monthly' ? addMonthsStr(s, 1) : addDaysStr(s, t.sched_kind === 'biweekly' ? 14 : 7);
+
+	let base: string;
+	if (lastDone != null) base = step(lastDone);          // 1re occurrence après la dernière faite
+	else if (earliest != null) base = earliest;            // ancre = bootstrap d'origine / date manuelle
+	else return t.anchor_day ? nextWeekdayOnOrAfter(today, t.anchor_day) : today; // tout premier bootstrap
+
+	if (base > today) return base;                         // prochaine échéance dans le futur
+	let latest = base, next = step(base), guard = 0;
+	while (next <= today && guard++ < 600) { latest = next; next = step(next); }
+	return latest;                                          // dernière échéance <= aujourd'hui
+}
+
+// Invariant : au plus UNE occurrence en attente par tâche récurrente. On garde
+// celle d'aujourd'hui / la plus récente <= aujourd'hui (ou, à défaut, la plus
+// proche à venir) et on supprime les retards superflus. Tâches manuelles intactes.
+function dedupePending(today: string): void {
+	const dups = all<{ task_id: number }>(
+		"SELECT task_id FROM task_instances WHERE status = 'pending' GROUP BY task_id HAVING COUNT(*) > 1"
 	);
+	for (const { task_id } of dups) {
+		if (get<{ k: ScheduleKind }>('SELECT sched_kind AS k FROM tasks WHERE id = ?', task_id)?.k === 'manual') continue;
+		const open = all<{ id: number; due_date: string }>(
+			"SELECT id, due_date FROM task_instances WHERE task_id = ? AND status = 'pending' ORDER BY due_date, id",
+			task_id
+		);
+		const past = open.filter((o) => o.due_date <= today);
+		const keeper = past.length
+			? past.reduce((a, b) => (b.due_date > a.due_date || (b.due_date === a.due_date && b.id > a.id)) ? b : a).id
+			: open[0].id; // sinon la plus proche échéance future
+		const del = open.filter((o) => o.id !== keeper).map((o) => o.id);
+		if (del.length) run(`DELETE FROM task_instances WHERE id IN (${del.map(() => '?').join(',')})`, ...del);
+	}
+}
+
+export function generateDueInstances(): void {
+	const tasks = all<SchedRow>('SELECT id, sched_kind, sched_days, anchor_day FROM tasks WHERE is_active = 1');
+	const today = todayStr();
 	for (const t of tasks) {
 		if (t.sched_kind === 'manual') continue;
-		if (hasOpenInstance(t.id)) continue;
-		const last = get<{ due_date: string }>(
-			'SELECT due_date FROM task_instances WHERE task_id = ? ORDER BY due_date DESC, id DESC LIMIT 1',
-			t.id
+		const lastDone = get<{ d: string | null }>(
+			"SELECT MAX(due_date) AS d FROM task_instances WHERE task_id = ? AND status = 'done'", t.id
+		)?.d ?? null;
+		const earliest = get<{ d: string | null }>(
+			"SELECT MIN(due_date) AS d FROM task_instances WHERE task_id = ? AND status = 'pending'", t.id
+		)?.d ?? null;
+		const target = scheduledCurrentDue(t, lastDone, earliest, today);
+		if (!target) continue;
+		const pendings = all<{ due_date: string }>(
+			"SELECT due_date FROM task_instances WHERE task_id = ? AND status = 'pending'", t.id
 		);
-		const next = computeNextDue(t, last ? last.due_date : null);
-		if (next) insertInstance(t.id, next);
+		// Crée l'occurrence courante si aucune n'existe, ou si toutes les existantes
+		// sont antérieures à l'échéance courante (une nouvelle période est arrivée).
+		if (pendings.length === 0 || !pendings.some((p) => p.due_date >= target)) {
+			insertInstance(t.id, target);
+		}
 	}
+	dedupePending(today);
 }
 
 // Planifie l'occurrence suivante juste après une complétion (feedback immédiat).
@@ -257,6 +332,42 @@ export function getRecentDone(limit = 8): InstanceDTO[] {
 		`${INSTANCE_SELECT} WHERE ti.status = 'done' ORDER BY ti.validated_at DESC LIMIT ?`,
 		limit
 	).map(mapInstance);
+}
+
+// ── Regroupement des tâches faites par date de réalisation ────────────────────
+export type DoneKey = 'today' | 'week' | 'month' | 'past';
+export interface DoneGroup { key: DoneKey; label: string; items: InstanceDTO[]; }
+
+const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+export function getDoneGroups(limit = 300): DoneGroup[] {
+	const items = all<InstanceRow>(
+		`${INSTANCE_SELECT} WHERE ti.status = 'done' ORDER BY ti.validated_at DESC LIMIT ?`,
+		limit
+	).map(mapInstance);
+
+	const today = todayStr();
+	const weekStart = getWeekStart();
+	const now = new Date();
+	const monthStart = ymd(new Date(now.getFullYear(), now.getMonth(), 1));
+
+	const map: Record<DoneKey, InstanceDTO[]> = { today: [], week: [], month: [], past: [] };
+	for (const it of items) {
+		const d = (it.validatedAt ?? '').slice(0, 10); // partie date
+		if (d === today) map.today.push(it);
+		else if (d >= weekStart) map.week.push(it);
+		else if (d >= monthStart) map.month.push(it);
+		else map.past.push(it);
+	}
+
+	const labels: Record<DoneKey, string> = {
+		today: "Faites aujourd'hui",
+		week: 'Faites cette semaine',
+		month: `Faites en ${MONTHS_FR[now.getMonth()]}`,
+		past: 'Faites par le passé'
+	};
+	const order: DoneKey[] = ['today', 'week', 'month', 'past'];
+	return order.filter((k) => map[k].length).map((k) => ({ key: k, label: labels[k], items: map[k] }));
 }
 
 export function getHouseScore(): number {

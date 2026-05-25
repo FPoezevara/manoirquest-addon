@@ -1,9 +1,9 @@
 import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
-import { getRecentDone, uncompleteTask } from '$lib/server/tasks';
+import { getDoneGroups, uncompleteTask } from '$lib/server/tasks';
 
 export const load: PageServerLoad = async () => {
-	return { done: getRecentDone(100) };
+	return { groups: getDoneGroups(300) };
 };
 
 export const actions: Actions = {

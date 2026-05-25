@@ -1,5 +1,5 @@
-// ManoirQuest Service Worker — v0.2
-const CACHE = 'manoirquest-v2';
+// ManoirQuest Service Worker — v0.3
+const CACHE = 'manoirquest-v3';
 
 // Assets à mettre en cache offline
 const PRECACHE = [

@@ -16,6 +16,10 @@
 	];
 </script>
 
+<!-- Fond d'écran auto-hébergé : calque fixe plein écran. On construit l'URL avec
+     `base` (préfixe d'ingress runtime), comme les liens de nav → correct sous HAOS. -->
+<div class="app-bg" style="background-image: url('{base}/background.jpg')" aria-hidden="true"></div>
+
 <div class="app">
 	<header class="app-header">
 		<span class="logo">🏠</span>
