@@ -1,0 +1,8 @@
+# Empêche `COPY app/ ./` d'écraser le node_modules Linux (installé par
+# `npm install` dans le builder) avec les binaires de la machine de dev,
+# et évite d'embarquer build/.svelte-kit/data dans l'image.
+app/node_modules
+app/.svelte-kit
+app/build
+app/data
+**/.DS_Store

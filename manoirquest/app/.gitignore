@@ -1,3 +1,7 @@
-app/data/
-app/node_modules/
-app/build/
+# Dépendances & artefacts de build (régénérés par `npm install` / `npm run build`)
+node_modules/
+.svelte-kit/
+build/
+
+# Données locales de dev (la prod vit dans /share/manoirquest sur HAOS)
+data/
