@@ -47,6 +47,8 @@
 		<div class="banner banner-ok">Tâche ajoutée à faire.</div>
 	{:else if form?.dated}
 		<div class="banner banner-ok">Date mise à jour. 📅</div>
+	{:else if form?.deleted}
+		<div class="banner banner-ok">Tâche retirée de la liste.</div>
 	{/if}
 
 	<!-- Ajout manuel d'une occurrence -->
@@ -78,6 +80,11 @@
 				{#each group.items as inst}
 					{@const due = dueLabel(inst.dueDate)}
 					<div class="task-card">
+						<!-- Retirer cette occurrence (ponctuel : définitif · récurrent : sauté) -->
+						<form method="POST" action="?/delete" class="task-del-form">
+							<input type="hidden" name="instanceId" value={inst.id} />
+							<button class="task-del" title="Retirer cette tâche" aria-label="Retirer cette tâche">×</button>
+						</form>
 						<div class="row" style="margin-bottom:10px">
 							<span class="task-emoji">{inst.task.emoji}</span>
 							<div class="grow">

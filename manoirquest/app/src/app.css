@@ -216,8 +216,23 @@ body {
 /* ── Divers ──────────────────────────────────────────────────────────────── */
 .empty { text-align: center; padding: 36px 0; color: var(--text-3); }
 .empty .em { font-size: 44px; }
-.task-card { background: rgba(36, 36, 40, 0.82); -webkit-backdrop-filter: saturate(160%) blur(14px); backdrop-filter: saturate(160%) blur(14px); border: 0.5px solid var(--hairline); border-radius: var(--radius); padding: 14px; }
+.task-card { position: relative; background: rgba(36, 36, 40, 0.82); -webkit-backdrop-filter: saturate(160%) blur(14px); backdrop-filter: saturate(160%) blur(14px); border: 0.5px solid var(--hairline); border-radius: var(--radius); padding: 14px; }
 .task-emoji { font-size: 30px; }
+
+/* ── Croix « retirer cette occurrence » (coin haut-droit de la carte) ──────── */
+.task-del-form { position: absolute; top: 8px; right: 8px; margin: 0; }
+.task-del {
+	display: flex; align-items: center; justify-content: center;
+	width: 28px; height: 28px; padding: 0;
+	background: var(--surface-2); color: var(--text-3);
+	border: 0.5px solid var(--hairline); border-radius: 999px;
+	font-size: 18px; line-height: 1; cursor: pointer;
+	transition: background 0.15s, color 0.15s, transform 0.1s;
+}
+.task-del:hover { background: rgba(255, 69, 58, 0.15); color: #ff453a; border-color: rgba(255, 69, 58, 0.5); }
+.task-del:active { transform: scale(0.9); }
+/* Réserve la place de la croix pour que le titre/chips ne passent pas dessous */
+.task-card > .row:first-of-type { padding-right: 30px; }
 .diff-1 { color: var(--green); }
 .diff-2 { color: var(--yellow); }
 .diff-3 { color: #ff453a; }
@@ -266,6 +281,7 @@ body {
 /* ── Catégories de tâches par échéance (titres + couleurs distinctes) ──────── */
 .bucket { --bk: var(--text-3); --bk-bg: rgba(142, 142, 147, 0.16); }
 .bucket-today { --bk: #ff9f09; --bk-bg: rgba(255, 159, 9, 0.18); }
+.bucket-tomorrow { --bk: #ffd60a; --bk-bg: rgba(255, 214, 10, 0.18); }
 .bucket-week  { --bk: #0a84ff; --bk-bg: rgba(10, 132, 255, 0.18); }
 .bucket-month { --bk: #30d158; --bk-bg: rgba(48, 209, 88, 0.18); }
 .bucket-other { --bk: #c7c7cc; --bk-bg: rgba(199, 199, 204, 0.16); }

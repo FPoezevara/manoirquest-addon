@@ -1,6 +1,6 @@
 name: "ManoirQuest"
 description: "Application de gamification des tâches ménagères pour la famille"
-version: "0.2.0"
+version: "0.2.1"
 slug: "manoirquest"
 init: false
 homeassistant_api: false

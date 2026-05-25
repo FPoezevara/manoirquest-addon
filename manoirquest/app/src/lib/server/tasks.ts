@@ -299,19 +299,23 @@ export function getAvailableInstances(): InstanceDTO[] {
 }
 
 // ── Regroupement par échéance ─────────────────────────────────────────────────
-export type DueKey = 'today' | 'week' | 'month' | 'other';
+export type DueKey = 'today' | 'tomorrow' | 'week' | 'month' | 'other';
 export interface DueGroup { key: DueKey; label: string; items: InstanceDTO[]; }
 
 const DUE_LABELS: Record<DueKey, string> = {
 	today: "À faire aujourd'hui",
+	tomorrow: 'À faire demain',
 	week: 'À faire cette semaine',
 	month: 'À faire ce mois-ci',
 	other: 'Autres tâches'
 };
-const DUE_ORDER: DueKey[] = ['today', 'week', 'month', 'other'];
+const DUE_ORDER: DueKey[] = ['today', 'tomorrow', 'week', 'month', 'other'];
 
-function bucketFor(dueDate: string, today: string, eow: string, eom: string): DueKey {
+// Demain est testé avant la semaine : il sort toujours dans son propre bucket,
+// même si demain déborde de la semaine en cours (today = dimanche → demain lundi).
+function bucketFor(dueDate: string, today: string, tomorrow: string, eow: string, eom: string): DueKey {
 	if (!dueDate || dueDate <= today) return 'today'; // aujourd'hui + en retard
+	if (dueDate === tomorrow) return 'tomorrow';
 	if (dueDate <= eow) return 'week';
 	if (dueDate <= eom) return 'month';
 	return 'other';
@@ -320,10 +324,11 @@ function bucketFor(dueDate: string, today: string, eow: string, eom: string): Du
 export function getDueGroups(): DueGroup[] {
 	const items = getAvailableInstances();
 	const today = todayStr();
+	const tomorrow = addDaysStr(today, 1);
 	const eow = endOfWeekStr();
 	const eom = endOfMonthStr();
-	const map: Record<DueKey, InstanceDTO[]> = { today: [], week: [], month: [], other: [] };
-	for (const it of items) map[bucketFor(it.dueDate, today, eow, eom)].push(it);
+	const map: Record<DueKey, InstanceDTO[]> = { today: [], tomorrow: [], week: [], month: [], other: [] };
+	for (const it of items) map[bucketFor(it.dueDate, today, tomorrow, eow, eom)].push(it);
 	return DUE_ORDER.filter((k) => map[k].length).map((k) => ({ key: k, label: DUE_LABELS[k], items: map[k] }));
 }
 
@@ -450,6 +455,26 @@ export function setInstanceDate(instanceId: number, date: string): void {
 export function addInstance(taskId: number): void {
 	if (!get('SELECT id FROM tasks WHERE id = ? AND is_active = 1', taskId)) throw new Error('Tâche inconnue');
 	insertInstance(taskId, todayStr());
+}
+
+// ── Suppression d'une occurrence (retirer de la liste « à faire ») ────────────
+// Ponctuel  : l'occurrence disparaît définitivement (rien ne la régénère).
+// Récurrent : on supprime l'occurrence courante puis on planifie directement la
+//   suivante (« sauter cette fois »). Sans ce scheduleNext, generateDueInstances
+//   recréerait une occurrence à la MÊME échéance au prochain chargement : la
+//   suivante (>= aujourd'hui) satisfait l'invariant « une occurrence ouverte »
+//   et bloque cette régénération. scheduleNext s'auto-protège pour les tâches
+//   manuelles, inactives ou déjà pourvues d'une occurrence ouverte.
+export function deleteInstance(instanceId: number): void {
+	const inst = get<{ id: number; status: string; task_id: number; due_date: string }>(
+		'SELECT id, status, task_id, due_date FROM task_instances WHERE id = ?', instanceId
+	);
+	if (!inst) throw new Error('Tâche introuvable');
+	if (inst.status === 'done') throw new Error('Tâche déjà faite — annule-la depuis « Faites »');
+
+	run('DELETE FROM task_instances WHERE id = ?', instanceId);
+
+	scheduleNext(inst.task_id, inst.due_date);
 }
 
 // ── Points ──────────────────────────────────────────────────────────────────

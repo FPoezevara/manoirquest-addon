@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
-import { getDueGroups, completeTask, addInstance, setInstanceDate, listCatalogue } from '$lib/server/tasks';
+import { getDueGroups, completeTask, addInstance, setInstanceDate, listCatalogue, deleteInstance } from '$lib/server/tasks';
 
 export const load: PageServerLoad = async () => {
 	return {
@@ -49,5 +49,19 @@ export const actions: Actions = {
 			return fail(400, { error: (e as Error).message });
 		}
 		return { dated: true };
+	},
+
+	// Retirer une occurrence de la liste « à faire ».
+	// Ponctuel : disparaît. Récurrent : sautée → replanifiée à la prochaine échéance.
+	delete: async ({ request }) => {
+		const data = await request.formData();
+		const instanceId = Number(data.get('instanceId'));
+		if (!instanceId) return fail(400, { error: 'Occurrence invalide' });
+		try {
+			deleteInstance(instanceId);
+		} catch (e: unknown) {
+			return fail(400, { error: (e as Error).message });
+		}
+		return { deleted: true };
 	}
 };
