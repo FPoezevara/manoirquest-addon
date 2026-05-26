@@ -9,12 +9,23 @@ interface UserRow {
 	role: 'parent' | 'child';
 	weekly_points: number;
 	total_points: number;
+	spent_points: number;
 	level: number;
 }
 
-const USER_SELECT = 'SELECT id, name, avatar, role, weekly_points, total_points, level FROM users';
+// total_points reste cumulatif (niveau/classement). On joint la somme des coûts des
+// récompenses approuvées pour dériver le solde dépensable sans dénormaliser de compteur.
+const USER_SELECT = `
+	SELECT u.id, u.name, u.avatar, u.role, u.weekly_points, u.total_points, u.level,
+	       COALESCE(s.spent, 0) AS spent_points
+	FROM users u
+	LEFT JOIN (
+		SELECT claimed_by, SUM(cost) AS spent
+		FROM reward_claims WHERE status = 'approved' GROUP BY claimed_by
+	) s ON s.claimed_by = u.id`;
 
 function mapPlayer(r: UserRow, badges: { emoji: string; name: string }[] = []): PlayerDTO {
+	const spent = r.spent_points ?? 0;
 	return {
 		id: r.id,
 		name: r.name,
@@ -22,6 +33,8 @@ function mapPlayer(r: UserRow, badges: { emoji: string; name: string }[] = []): 
 		role: r.role,
 		weeklyPoints: r.weekly_points,
 		totalPoints: r.total_points,
+		spentPoints: spent,
+		availablePoints: Math.max(0, r.total_points - spent),
 		level: r.level,
 		badges
 	};
@@ -34,11 +47,11 @@ export function resetWeeklyIfNeeded(): void {
 }
 
 export function listPlayers(): PlayerDTO[] {
-	return all<UserRow>(`${USER_SELECT} ORDER BY id`).map(r => mapPlayer(r));
+	return all<UserRow>(`${USER_SELECT} ORDER BY u.id`).map(r => mapPlayer(r));
 }
 
 export function getPlayer(userId: number): PlayerDTO | null {
-	const r = get<UserRow>(`${USER_SELECT} WHERE id = ?`, userId);
+	const r = get<UserRow>(`${USER_SELECT} WHERE u.id = ?`, userId);
 	return r ? mapPlayer(r) : null;
 }
 
@@ -123,24 +136,30 @@ export function deleteReward(rewardId: number): void {
 export function getUserClaims(userId: number) {
 	return all<{ id: number; status: string; claimed_at: string; reward_emoji: string; reward_name: string; reward_cost: number }>(`
 		SELECT rc.id, rc.status, rc.claimed_at,
-		       r.emoji AS reward_emoji, r.name AS reward_name, r.cost AS reward_cost
+		       r.emoji AS reward_emoji, r.name AS reward_name,
+		       COALESCE(rc.cost, r.cost) AS reward_cost
 		FROM reward_claims rc JOIN rewards r ON r.id = rc.reward_id
 		WHERE rc.claimed_by = ? ORDER BY rc.claimed_at DESC
 	`, userId);
 }
 
 // Réclamation d'une récompense : on enregistre la demande (approuvée d'office,
-// plus de validation parent). Les points NE sont PAS déduits — ils restent un
-// score pur pour le classement/niveaux. Le coût sert de palier (canAfford).
+// plus de validation parent). On DÉBITE le solde dépensable — total_points, niveau
+// et classement restent strictement cumulatifs et ne bougent pas. Le coût payé est
+// figé dans la ligne (rc.cost) pour que Σ(cost approuvés) reste cohérent même si le
+// tarif de la récompense change ensuite.
 export function claimReward(rewardId: number, userId: number): void {
 	const reward = get<Reward>('SELECT * FROM rewards WHERE id = ?', rewardId);
 	if (!reward) throw new Error('Récompense introuvable');
 
-	const user = get<{ total_points: number }>('SELECT total_points FROM users WHERE id = ?', userId);
-	if (!user) throw new Error('Personne inconnue');
-	if (user.total_points < reward.cost) {
-		throw new Error(`Il faut ${reward.cost} pts (ce joueur en a ${user.total_points})`);
+	const player = getPlayer(userId);
+	if (!player) throw new Error('Personne inconnue');
+	if (player.availablePoints < reward.cost) {
+		throw new Error(`Solde insuffisant : ${reward.cost} pts requis, ${player.availablePoints} pts disponibles`);
 	}
 
-	run("INSERT INTO reward_claims (reward_id, claimed_by, status) VALUES (?, ?, 'approved')", rewardId, userId);
+	run(
+		"INSERT INTO reward_claims (reward_id, claimed_by, cost, status) VALUES (?, ?, ?, 'approved')",
+		rewardId, userId, reward.cost
+	);
 }

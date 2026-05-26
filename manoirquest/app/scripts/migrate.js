@@ -94,6 +94,7 @@ CREATE TABLE IF NOT EXISTS reward_claims (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   reward_id   INTEGER NOT NULL REFERENCES rewards(id),
   claimed_by  INTEGER NOT NULL REFERENCES users(id),
+  cost        INTEGER NOT NULL DEFAULT 0,  -- snapshot du coût payé (immunise le solde contre une modif ultérieure du tarif)
   claimed_at  TEXT    NOT NULL DEFAULT (datetime('now')),
   approved_by INTEGER REFERENCES users(id),
   status      TEXT    NOT NULL DEFAULT 'pending'
@@ -233,6 +234,21 @@ if (!taskCols.includes('sched_kind')) {
 if (!taskCols.includes('anchor_day')) {
   db.exec('ALTER TABLE tasks ADD COLUMN anchor_day INTEGER');
   console.log('  ✓ Migration anchor_day appliquée');
+}
+
+// ── Migration : solde dépensable (reward_claims.cost) ─────────────────────────
+// total_points reste cumulatif (niveau/classement). Le solde dépensable d'un joueur
+// = total_points − Σ(cost des claims approuvés). On fige le coût payé au moment du
+// claim pour qu'une modif ultérieure du tarif d'une récompense ne réécrive pas
+// l'historique. Backfill une seule fois depuis le tarif courant des claims existants.
+const claimCols = db.prepare('PRAGMA table_info(reward_claims)').all().map((c) => c.name);
+if (!claimCols.includes('cost')) {
+  db.exec('ALTER TABLE reward_claims ADD COLUMN cost INTEGER NOT NULL DEFAULT 0');
+  db.exec(`
+    UPDATE reward_claims
+    SET cost = COALESCE((SELECT r.cost FROM rewards r WHERE r.id = reward_claims.reward_id), 0)
+  `);
+  console.log('  ✓ Migration reward_claims.cost (solde dépensable) appliquée');
 }
 
 console.log('Schéma à jour ✅');

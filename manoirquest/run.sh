@@ -11,6 +11,23 @@ export SECRET_KEY="${SECRET_KEY:-change-me-please}"
 export DB_PATH="${DATA_PATH}/manoirquest.db"
 export NODE_ENV="production"
 
+# ── Notification quotidienne (push add-on → notify.mobile_app_*) ──────────
+# Le scheduler vit dans le serveur Node (hooks.server.ts). SUPERVISOR_TOKEN est
+# injecté automatiquement par le superviseur (homeassistant_api: true).
+NOTIFY_ENABLED=$(bashio::config 'notify_enabled')
+NOTIFY_TIME=$(bashio::config 'notify_time')
+
+# notify_targets est une liste YAML → on la replie en CSV pour l'env.
+NOTIFY_TARGETS=""
+for target in $(bashio::config 'notify_targets'); do
+  NOTIFY_TARGETS="${NOTIFY_TARGETS}${NOTIFY_TARGETS:+,}${target}"
+done
+
+export NOTIFY_ENABLED="${NOTIFY_ENABLED:-true}"
+export NOTIFY_TIME="${NOTIFY_TIME:-08:00}"
+export NOTIFY_TARGETS
+bashio::log.info "Notif quotidienne: enabled=${NOTIFY_ENABLED} time=${NOTIFY_TIME} targets=${NOTIFY_TARGETS:-<aucune>}"
+
 # ── Ensure data directory exists ─────────────────────────────────────────
 mkdir -p "${DATA_PATH}"
 bashio::log.info "ManoirQuest data directory: ${DATA_PATH}"

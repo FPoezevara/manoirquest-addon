@@ -39,6 +39,12 @@
 				<span>{data.progress.nextLevelPts - data.player.totalPoints} pts → niveau suivant</span>
 			</div>
 			<div class="progress"><span style="width:{data.progress.progressPct}%"></span></div>
+
+			<!-- Solde dépensable : distinct des points totaux (qui pilotent le niveau, jamais débités) -->
+			<div class="between" style="margin-top:14px; align-items:baseline">
+				<span class="tiny dim">💳 Solde dépensable</span>
+				<span class="pts" style="font-weight:700; font-size:18px">{data.player.availablePoints} pts</span>
+			</div>
 		</div>
 
 		<!-- Badges -->
@@ -61,7 +67,7 @@
 		<!-- Récompenses -->
 		<div class="card">
 			<h2 class="card-h bare">🎁 Récompenses</h2>
-			<p class="tiny dim" style="margin:0 0 12px">{data.player.name} a <span class="pts">{data.player.totalPoints} pts</span></p>
+			<p class="tiny dim" style="margin:0 0 12px">Solde dépensable de {data.player.name} : <span class="pts">{data.player.availablePoints} pts</span></p>
 
 			{#if form?.error}
 				<div class="banner banner-err" style="margin-bottom:12px">{form.error}</div>
@@ -70,7 +76,7 @@
 			{/if}
 
 			{#each data.rewards as reward}
-				{@const canAfford = data.player.totalPoints >= reward.cost}
+				{@const canAfford = data.player.availablePoints >= reward.cost}
 				<div class="list-row">
 					<span style="font-size:22px">{reward.emoji}</span>
 					<div class="grow">

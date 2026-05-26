@@ -1,4 +1,12 @@
 import type { Handle } from '@sveltejs/kit';
+import { building } from '$app/environment';
+import { startDailyNotificationScheduler } from '$lib/server/notify';
+
+// Démarré une seule fois au boot du serveur (top-level du module de hooks).
+// Garde `building` : ne pas armer de timer pendant `npm run build`.
+if (!building) {
+	startDailyNotificationScheduler();
+}
 
 export const handle: Handle = async ({ event, resolve }) => {
 	// Préfixe d'ingress HA (X-Ingress-Path), connu seulement au runtime.

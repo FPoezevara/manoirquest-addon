@@ -98,6 +98,7 @@ export interface RewardClaim {
 	id: number;
 	reward_id: number;
 	claimed_by: number;
+	cost: number;            // coût payé, figé au moment du claim (solde dépensable)
 	claimed_at: string;
 	approved_by: number | null;
 	status: RewardStatus;
@@ -124,7 +125,9 @@ export interface PlayerDTO {
 	avatar: string;
 	role: Role;
 	weeklyPoints: number;
-	totalPoints: number;
+	totalPoints: number;     // cumulatif — pilote niveau & classement, jamais débité
+	spentPoints: number;     // Σ des récompenses réclamées
+	availablePoints: number; // solde dépensable = max(0, totalPoints − spentPoints)
 	level: number;
 	badges?: { emoji: string; name: string }[];
 }

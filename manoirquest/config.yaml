@@ -1,9 +1,9 @@
 name: "ManoirQuest"
 description: "Application de gamification des tâches ménagères pour la famille"
-version: "0.2.1"
+version: "0.3.0"
 slug: "manoirquest"
 init: false
-homeassistant_api: false
+homeassistant_api: true   # accès au proxy Core (http://supervisor/core/api) pour notify.mobile_app_*
 hassio_api: false
 hassio_role: default
 auth_api: false
@@ -24,11 +24,20 @@ options:
   data_path: /share/manoirquest
   port: 3000
   secret_key: "change-me-in-production-32-chars-min"
+  notify_enabled: true
+  notify_time: "08:00"
+  notify_targets:
+    - mobile_app_iphone_de_francis_2
+    - mobile_app_sm_g998u1
 
 schema:
   data_path: str
   port: int
   secret_key: str
+  notify_enabled: bool
+  notify_time: match(^[0-2][0-9]:[0-5][0-9]$)
+  notify_targets:
+    - str
 
 arch:
   - aarch64
